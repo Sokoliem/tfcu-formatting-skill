@@ -1,0 +1,24 @@
+{
+  "name": "tfcu-procedure-formatter",
+  "version": "4.3.2",
+  "description": "TFCU Procedure Formatter - Screenshot annotation and document generation with color-matched validation",
+  "private": true,
+  "scripts": {
+    "validate": "node validator/index.js"
+  },
+  "dependencies": {
+    "docx": "^8.0.0",
+    "jszip": "^3.10.1",
+    "@xmldom/xmldom": "^0.8.10"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "tfcu",
+    "procedure",
+    "documentation",
+    "screenshot",
+    "annotation"
+  ],
+  "author": "TFCU",
+  "license": "UNLICENSED"
+}
