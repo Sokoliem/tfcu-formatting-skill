@@ -1,0 +1,18 @@
+{
+  "name": "tfcu-skills-marketplace",
+  "owner": {
+    "name": "TFCU",
+    "email": "documentation@tfcu.org"
+  },
+  "plugins": [
+    {
+      "name": "tfcu-procedure-formatter",
+      "description": "Transforms legacy TFCU policies and procedures into standardized professional documents with screenshot annotation, color-matched validation, and TFCU branding.",
+      "source": ".",
+      "version": "4.3.2",
+      "skills": [
+        "."
+      ]
+    }
+  ]
+}

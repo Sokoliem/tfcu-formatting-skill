@@ -1,0 +1,8 @@
+{
+  "name": "tfcu-procedure-formatter",
+  "version": "4.3.2",
+  "description": "Transforms legacy TFCU policies and procedures into standardized professional documents. Enforces teal branding, hierarchical numbering, and revision tracking per TFCU template.",
+  "skills": [
+    "."
+  ]
+}
