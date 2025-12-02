@@ -37,12 +37,12 @@ def create_skill_package(source_dir, output_file):
                 print(f"Adding: {arcname_str}")
                 zipf.write(file_path, arcname_str)
 
-    print(f"\n✓ Created: {output_file}")
+    print(f"\nCreated: {output_file}")
     print(f"  Size: {Path(output_file).stat().st_size / 1024:.1f} KB")
 
 
 if __name__ == "__main__":
     source = r"C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter"
-    output = r"C:\Users\emsok\Downloads\TFCU-procedure-formatter\tfcu-procedure-formatter-v4.3.1.skill"
+    output = r"C:\Users\emsok\Downloads\TFCU-procedure-formatter\tfcu-procedure-formatter-v4.5.skill"
 
     create_skill_package(source, output)
