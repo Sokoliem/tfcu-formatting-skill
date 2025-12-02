@@ -1,7 +1,7 @@
 {
-  "_comment": "TFCU Screenshot Annotation Template v4.5 - Example annotation configurations",
+  "_comment": "TFCU Screenshot Annotation Template v4.6 - Example annotation configurations",
   "_schema": {
-    "version": "4.5",
+    "version": "4.6",
     "required_fields": ["type", "position|bbox", "description"],
     "optional_fields": ["number", "color", "figure_title", "section", "step_reference"]
   },
@@ -11,10 +11,20 @@
     "Supported types: callout, arrow, highlight, circle, label",
     "Color options: primary, critical, warning, info, success, purple, orange",
     "",
-    "v4.5: Legend is NO LONGER placed on screenshots - callouts are referenced inline in procedure text",
-    "REQUIRED: 'description' field is mandatory - this text appears in the procedure step as '(color callout N)'",
+    "v4.6: Callouts are referenced in text as '(callout N)' - NO color name in text!",
+    "The callout CIRCLE on the screenshot IS the color indicator",
+    "REQUIRED: 'description' field is mandatory for figure registry",
     "Write descriptions as action instructions: 'Click Login button' NOT 'Login button location'",
     "RECOMMENDED: Include 'figure_title' and 'section' for proper figure indexing"
+  ],
+  "_placement_guidance": [
+    "CRITICAL: Use Claude's vision to analyze screenshots BEFORE setting coordinates",
+    "1. Identify the exact UI element (button, field, menu item) to annotate",
+    "2. Estimate its center position as percentage of image width/height",
+    "3. For buttons/icons: place callout directly on or adjacent to the element",
+    "4. For text fields: place callout at the start of the field",
+    "5. For menu items: place callout on the menu item text",
+    "6. Verify: callout should be within 5% of the actual element center"
   ],
 
   "image1_login_screen": [

@@ -459,7 +459,7 @@ function createStepWithScreenshot({
 }
 ```
 
-### Using callouts_for_text for Inline References (v4.5)
+### Using callouts_for_text for Inline References (v4.6)
 
 The `figure_registry.json` provides `callouts_for_text` with ready-to-use inline references for procedure text. Sub-steps can be generated directly from callout descriptions:
 
@@ -486,7 +486,7 @@ createStepWithScreenshot({
   stepNum: "1.",
   text: "Access the Card Issuance screen.",
   subSteps: generateSubStepsFromCallouts(1),
-  // Output: ["Navigate to Tools menu (teal callout 1)", "Select Card Services (teal callout 2)", ...]
+  // Output: ["Navigate to Tools menu (callout 1)", "Select Card Services (callout 2)", ...]
   imagePath: "workspace/images/annotated/figure_01_card_issuance.png",
   figureNumber: 1
 });
@@ -501,19 +501,19 @@ createStepWithScreenshot({
       "number": 1,
       "color": "teal",
       "description": "Navigate to Tools menu",
-      "inline_reference": "(teal callout 1)"
+      "inline_reference": "(callout 1)"
     },
     {
       "number": 2,
       "color": "red",
       "description": "Click Instant Issue",
-      "inline_reference": "(red callout 2)"
+      "inline_reference": "(callout 2)"
     }
   ]
 }
 ```
 
-**Note:** Screenshots no longer include a legend box. All callout information is integrated into the procedure text.
+**IMPORTANT (v4.6):** The `color` field determines the callout circle color ON THE SCREENSHOT. The `inline_reference` in text is always just "(callout N)" without color words - the reader sees the colored circle on the image.
 
 ### createTextStep
 

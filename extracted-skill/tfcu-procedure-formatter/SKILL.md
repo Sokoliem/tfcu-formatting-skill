@@ -9,7 +9,7 @@ description: >
   and revision tracking per TFCU template.
 ---
 
-# TFCU Procedure Formatter v4.5
+# TFCU Procedure Formatter v4.6
 
 Transform legacy policies and procedures into professional, standardized documents using the official TFCU Procedure Template.
 
@@ -211,24 +211,63 @@ All screenshots MUST be processed through the annotation pipeline:
 3. Register in `figure_registry.json`
 4. Validate with `validate_procedure.py`
 
-### Color-Matching Rule
+### Accurate Callout Placement (v4.6 - CRITICAL)
 
-Annotation colors MUST match procedure text references. Use this mapping:
+Callouts MUST be placed precisely on the UI elements they reference. Use vision analysis:
 
-| Text Pattern | Color Name | Hex |
-|--------------|------------|-----|
-| "red" or "critical" | critical | #C00000 |
-| "blue" or "info" | info | #2E74B5 |
-| "gold", "yellow", or "warning" | warning | #FFC000 |
-| "green" or "success" | success | #548235 |
-| "teal" or "primary" | primary | #154747 |
-| "purple" | purple | #7030A0 |
-| "orange" | orange | #ED7D31 |
+**Placement Process:**
+1. **Analyze the screenshot** - Identify exact pixel locations of UI elements
+2. **Calculate percentage coordinates** - Convert pixel position to % of image dimensions
+3. **Place callout at element center** - Callout circle should overlap the target element
+4. **Verify visually** - The numbered circle must clearly indicate "click HERE"
 
-**Examples:**
-- "(red callout 1)" or "(critical callout 1)" = #C00000 annotation
-- "(blue highlight)" or "(info highlight)" = #2E74B5 highlight box
-- "(teal arrow)" or "(primary arrow)" = #154747 arrow
+**Coordinate Calculation:**
+```
+x_percent = (element_center_x / image_width) * 100
+y_percent = (element_center_y / image_height) * 100
+```
+
+**Placement Rules:**
+| Element Type | Callout Position |
+|--------------|------------------|
+| Button | Center of button |
+| Menu item | Left side of menu text |
+| Input field | Left edge of field |
+| Checkbox/Radio | Center of checkbox |
+| Icon | Center of icon |
+| Tab | Center of tab label |
+
+**Common Mistakes to Avoid:**
+- Callout floating in empty space (not on any element)
+- Callout obscuring important text
+- Callout on wrong element (verify element matches step description)
+- Generic center placement (x:50, y:50) without analysis
+
+**Validation Checklist:**
+- [ ] Each callout clearly indicates a specific, clickable UI element
+- [ ] Callout number is visible and not cut off by image edge
+- [ ] Multiple callouts don't overlap each other
+- [ ] Callout placement matches the step description exactly
+
+### Color Selection Rule
+
+Choose callout colors based on action importance. The COLOR is only on the screenshot - text just says "(callout N)":
+
+| Action Type | Color Name | Hex | When to Use |
+|-------------|------------|-----|-------------|
+| Primary action | critical | #C00000 | Main button to click, required action |
+| Navigation | primary | #154747 | Menu navigation, tabs, links |
+| Informational | info | #2E74B5 | Reference fields, read-only data |
+| Caution | warning | #FFC000 | Fields requiring care, optional |
+| Confirmation | success | #548235 | Success indicators, completion |
+| Secondary | purple | #7030A0 | Alternative paths |
+| Tertiary | orange | #ED7D31 | Additional options |
+
+**Color Assignment Examples:**
+- "Click Submit" → RED callout (primary action)
+- "Navigate to Settings menu" → TEAL callout (navigation)
+- "Note the account number shown" → BLUE callout (informational)
+- "Enter amount carefully" → GOLD callout (requires attention)
 
 ### Annotation Types
 
@@ -240,31 +279,29 @@ Annotation colors MUST match procedure text references. Use this mapping:
 | Circle | Single focus point |
 | Label | Explanatory text |
 
-### Inline Callout References (v4.5)
+### Inline Callout References (v4.6)
 
-Annotation callouts are referenced directly in procedure step text using **inline parenthetical references**. The legend is NOT placed on the screenshot image.
+Callout numbers in procedure text reference the **numbered circles on the screenshot**. The callout circle on the screenshot IS the color - do NOT include the color name in the text.
 
-**Format:** `(color callout N)` where:
-- `color` = red, blue, gold, green, teal, purple, orange
-- `N` = the callout number on the screenshot
+**Format:** `(callout N)` where N = the number shown on the screenshot callout
 
 **Example step with callout references:**
 
 ```
 1. Access the Card Issuance screen.
 
-   a. Navigate to the Tools menu (teal callout 1)
-   b. Select Card Services from the dropdown (teal callout 2)
-   c. Click Instant Issue (red callout 3) - this is the primary action
+   a. Navigate to the Tools menu (callout 1)
+   b. Select Card Services from the dropdown (callout 2)
+   c. Click Instant Issue (callout 3) - this is the primary action
 ```
 
 **Guidelines:**
-- Place the callout reference after the action it describes
-- Use the user-friendly color name (red, not critical)
-- Sub-steps often map 1:1 with numbered callouts
-- Critical/primary actions use red callouts
-- Navigation steps use teal callouts
-- Informational elements use blue callouts
+- Text says "(callout N)" - the COLOR is only on the screenshot, not in words
+- The numbered circle on the screenshot is colored (teal, red, etc.) - that IS the visual indicator
+- Sub-steps map 1:1 with numbered callouts on the screenshot
+- Critical actions get RED callouts on screenshot
+- Navigation steps get TEAL callouts on screenshot
+- Informational elements get BLUE callouts on screenshot
 
 **Using figure_registry.json:**
 The registry provides `callouts_for_text` with ready-to-use references:
@@ -273,12 +310,14 @@ The registry provides `callouts_for_text` with ready-to-use references:
 {
   "figure_number": 1,
   "callouts_for_text": [
-    {"number": 1, "color": "teal", "description": "Navigate to Tools menu", "inline_reference": "(teal callout 1)"},
-    {"number": 2, "color": "teal", "description": "Select Card Services", "inline_reference": "(teal callout 2)"},
-    {"number": 3, "color": "red", "description": "Click Instant Issue", "inline_reference": "(red callout 3)"}
+    {"number": 1, "color": "teal", "description": "Navigate to Tools menu", "inline_reference": "(callout 1)"},
+    {"number": 2, "color": "teal", "description": "Select Card Services", "inline_reference": "(callout 2)"},
+    {"number": 3, "color": "red", "description": "Click Instant Issue", "inline_reference": "(callout 3)"}
   ]
 }
 ```
+
+**IMPORTANT:** The `color` field controls the callout circle color ON THE SCREENSHOT. The `inline_reference` in text is always just "(callout N)" without color words.
 
 ---
 

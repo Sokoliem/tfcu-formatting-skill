@@ -43,6 +43,6 @@ def create_skill_package(source_dir, output_file):
 
 if __name__ == "__main__":
     source = r"C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter"
-    output = r"C:\Users\emsok\Downloads\TFCU-procedure-formatter\tfcu-procedure-formatter-v4.5.skill"
+    output = r"C:\Users\emsok\Downloads\TFCU-procedure-formatter\tfcu-procedure-formatter-v4.6.skill"
 
     create_skill_package(source, output)

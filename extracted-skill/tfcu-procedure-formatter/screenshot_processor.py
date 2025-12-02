@@ -1223,7 +1223,8 @@ class FigureRegistry:
         final_title = title or first_ann_title or f"Figure {figure_num}"
         final_description = description or first_ann_desc or "Screenshot"
 
-        # v4.5: Generate callouts_for_text for inline procedure text references
+        # v4.6: Generate callouts_for_text for inline procedure text references
+        # Color is ONLY on the screenshot callout - NOT in the text reference
         callouts_for_text = []
         for ann in annotations:
             if ann.get("type") == "callout" and ann.get("number"):
@@ -1240,11 +1241,12 @@ class FigureRegistry:
                 callouts_for_text.append(
                     {
                         "number": ann["number"],
-                        "color": display_color,
+                        "color": display_color,  # Color for the SCREENSHOT callout only
                         "description": ann.get(
                             "description", f"Action {ann['number']}"
                         ),
-                        "inline_reference": f"({display_color} callout {ann['number']})",
+                        # v4.6: Text says "(callout N)" - color is visual on screenshot only
+                        "inline_reference": f"(callout {ann['number']})",
                     }
                 )
 

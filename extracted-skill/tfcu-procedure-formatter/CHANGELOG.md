@@ -2,7 +2,43 @@
 
 ## Summary
 
-The TFCU Procedure Formatter skill provides professional document generation for credit union procedures. This changelog tracks all versions from the initial release through the current v4.3.2 release.
+The TFCU Procedure Formatter skill provides professional document generation for credit union procedures. This changelog tracks all versions from the initial release through the current v4.6 release.
+
+---
+
+## v4.6 - Callout Format & Placement Accuracy (Dec 2025)
+
+### Breaking Changes
+
+- **Inline reference format changed**: Text now uses `(callout N)` instead of `(color callout N)`
+  - Old: "Click the button (teal callout 1)"
+  - New: "Click the button (callout 1)"
+  - The COLOR is only visible on the screenshot callout circle, not in the text
+
+### Improvements
+
+- **Accurate callout placement guidance**: New section in SKILL.md with:
+  - Step-by-step placement process using vision analysis
+  - Coordinate calculation formula
+  - Placement rules by element type (buttons, menus, fields, etc.)
+  - Common mistakes to avoid checklist
+  - Validation checklist for quality assurance
+
+- **Color selection by action type**: New table mapping action importance to callout colors:
+  - Primary actions → RED (critical)
+  - Navigation → TEAL (primary)
+  - Informational → BLUE (info)
+  - Caution → GOLD (warning)
+
+### Technical Changes
+
+- `screenshot_processor.py`: `inline_reference` now generates `(callout N)` format
+- `figure_registry.json`: `callouts_for_text[].inline_reference` no longer includes color name
+- `annotation_template.json`: Added `_placement_guidance` section with vision analysis instructions
+
+### Migration
+
+Update any code that parses `inline_reference` to expect `(callout N)` format instead of `(color callout N)`.
 
 ---
 
