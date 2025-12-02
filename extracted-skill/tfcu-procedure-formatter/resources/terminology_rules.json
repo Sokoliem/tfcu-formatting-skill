@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "description": "TFCU Procedure Terminology Standards - Automated validation rules",
+  "rules": [
+    {
+      "id": "term-select",
+      "preferred": "select",
+      "prohibited": ["click", "choose", "pick", "press"],
+      "severity": "error",
+      "category": "action-verbs",
+      "context_exceptions": [],
+      "rationale": "Standardize UI interaction terminology"
+    },
+    {
+      "id": "term-member",
+      "preferred": "member",
+      "prohibited": ["customer", "client", "user"],
+      "severity": "error",
+      "category": "people",
+      "context_exceptions": ["username", "user name", "user ID", "end user"],
+      "rationale": "Credit union members, not customers"
+    },
+    {
+      "id": "term-enter",
+      "preferred": "enter",
+      "prohibited": ["type", "key in", "input"],
+      "severity": "error",
+      "category": "action-verbs",
+      "context_exceptions": ["card type", "account type", "input field"],
+      "rationale": "Standardize data entry terminology"
+    },
+    {
+      "id": "term-verify",
+      "preferred": "verify",
+      "prohibited": ["check", "confirm", "ensure", "validate"],
+      "severity": "warning",
+      "category": "action-verbs",
+      "context_exceptions": ["checkbox", "check box", "confirm button", "confirmation"],
+      "rationale": "Standardize verification terminology"
+    },
+    {
+      "id": "term-screen",
+      "preferred": "screen",
+      "prohibited": ["page", "window"],
+      "severity": "warning",
+      "category": "interface",
+      "context_exceptions": ["print page", "page number", "pages", "popup window", "dialog window", "web page"],
+      "rationale": "Use 'screen' for application views"
+    },
+    {
+      "id": "term-navigate",
+      "preferred": "navigate to",
+      "prohibited": ["go to", "open up", "pull up"],
+      "severity": "warning",
+      "category": "action-verbs",
+      "context_exceptions": [],
+      "rationale": "Professional navigation terminology"
+    },
+    {
+      "id": "term-display",
+      "preferred": "displays",
+      "prohibited": ["shows up", "pops up", "comes up", "appears"],
+      "severity": "warning",
+      "category": "system-behavior",
+      "context_exceptions": ["popup", "pop-up"],
+      "rationale": "Technical accuracy for system behavior"
+    },
+    {
+      "id": "term-complete",
+      "preferred": "complete",
+      "prohibited": ["finish up", "wrap up", "finalize"],
+      "severity": "warning",
+      "category": "action-verbs",
+      "context_exceptions": [],
+      "rationale": "Clear completion terminology"
+    },
+    {
+      "id": "term-account-number",
+      "preferred": "account number",
+      "prohibited": ["acct number", "acct num", "acct #", "account #"],
+      "severity": "error",
+      "category": "data-fields",
+      "context_exceptions": [],
+      "rationale": "No abbreviations for critical data fields"
+    },
+    {
+      "id": "term-information",
+      "preferred": "information",
+      "prohibited": ["info"],
+      "severity": "warning",
+      "category": "general",
+      "context_exceptions": ["info box", "info icon"],
+      "rationale": "Avoid informal abbreviations"
+    }
+  ],
+  "passive_voice_patterns": [
+    "should be selected",
+    "needs to be entered",
+    "must be verified",
+    "will be displayed",
+    "can be found",
+    "is to be"
+  ],
+  "sentence_length": {
+    "target_max": 25,
+    "absolute_max": 35,
+    "severity": "warning"
+  },
+  "acronym_definitions_required": [
+    "BIN",
+    "PIN",
+    "MICR",
+    "GOLD",
+    "ATM",
+    "ACH",
+    "BSA",
+    "AML",
+    "CTR",
+    "SAR"
+  ]
+}
