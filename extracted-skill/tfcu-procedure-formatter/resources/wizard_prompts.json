@@ -1,0 +1,363 @@
+{
+  "version": "1.0",
+  "description": "Question templates and decision trees for the Interactive Procedure Wizard",
+
+  "activation_triggers": [
+    "create procedure",
+    "new procedure",
+    "write procedure",
+    "revise procedure",
+    "update procedure",
+    "reformat procedure",
+    "help me with a procedure",
+    "procedure wizard",
+    "draft a procedure",
+    "build a procedure"
+  ],
+
+  "phases": {
+    "intake": {
+      "phase_number": 1,
+      "estimated_minutes": "2-3",
+      "questions": [
+        {
+          "id": "mode",
+          "prompt": "What would you like to do?",
+          "options": [
+            {"value": "new", "label": "Create a new procedure from scratch"},
+            {"value": "revise", "label": "Revise/reformat an existing procedure"},
+            {"value": "quick", "label": "Quick format (minimal questions, fast output)"}
+          ],
+          "branching": {
+            "new": "continue_to_type",
+            "revise": "request_document",
+            "quick": "quick_mode_questions"
+          }
+        },
+        {
+          "id": "procedure_type",
+          "prompt": "What type of procedure is this?",
+          "options": [
+            {"value": "operational", "label": "Operational", "description": "Day-to-day tasks, system usage"},
+            {"value": "compliance", "label": "Compliance", "description": "Regulatory requirements, BSA/AML, auditable"},
+            {"value": "system", "label": "System", "description": "Software/application specific, screenshot-heavy"},
+            {"value": "service", "label": "Member Service", "description": "Member-facing interactions"},
+            {"value": "admin", "label": "Administrative", "description": "Internal processes, HR, facilities"}
+          ],
+          "implications": {
+            "operational": {
+              "sections": ["header", "overview", "quick_reference", "prerequisites", "steps", "troubleshooting", "revision_history"],
+              "screenshot_frequency": "medium",
+              "callout_emphasis": "tips"
+            },
+            "compliance": {
+              "sections": ["header", "overview", "regulatory_references", "quick_reference", "prerequisites", "approval_matrix", "steps", "audit_trail", "troubleshooting", "revision_history"],
+              "screenshot_frequency": "low",
+              "callout_emphasis": "critical",
+              "special_triggers": ["ctr", "bsa", "aml", "sar"]
+            },
+            "system": {
+              "sections": ["header", "overview", "quick_reference", "prerequisites", "steps", "troubleshooting", "revision_history"],
+              "screenshot_frequency": "high",
+              "callout_emphasis": "warnings"
+            },
+            "service": {
+              "sections": ["header", "overview", "quick_reference", "prerequisites", "steps", "member_communication", "troubleshooting", "revision_history"],
+              "screenshot_frequency": "low",
+              "callout_emphasis": "tips"
+            },
+            "admin": {
+              "sections": ["header", "overview", "prerequisites", "steps", "revision_history"],
+              "screenshot_frequency": "low",
+              "callout_emphasis": "info"
+            }
+          }
+        },
+        {
+          "id": "audience",
+          "prompt": "Who is the primary audience?",
+          "options": [
+            {"value": "frontline", "label": "Frontline staff", "description": "Tellers, MSRs"},
+            {"value": "backoffice", "label": "Back office staff", "description": "Operations, accounting"},
+            {"value": "management", "label": "Management", "description": "Supervisors, directors"},
+            {"value": "all", "label": "All staff", "description": "Organization-wide"}
+          ],
+          "implications": {
+            "frontline": {"detail_level": "high", "screenshot_need": "high", "jargon_allowed": false},
+            "backoffice": {"detail_level": "medium", "screenshot_need": "medium", "jargon_allowed": true},
+            "management": {"detail_level": "low", "screenshot_need": "low", "jargon_allowed": true},
+            "all": {"detail_level": "high", "screenshot_need": "medium", "jargon_allowed": false}
+          }
+        },
+        {
+          "id": "department",
+          "prompt": "Which department owns this procedure?",
+          "input_type": "text",
+          "suggestions": [
+            "Card Services",
+            "Member Services",
+            "Operations",
+            "Lending",
+            "Accounting",
+            "Compliance",
+            "IT",
+            "HR",
+            "Marketing"
+          ]
+        }
+      ]
+    },
+
+    "foundation": {
+      "phase_number": 2,
+      "estimated_minutes": "5-8",
+      "questions": [
+        {
+          "id": "title",
+          "prompt": "What should this procedure be called?",
+          "guidance": "Use action-oriented titles like 'Processing Wire Transfers' rather than noun phrases like 'Wire Transfer Procedure'",
+          "validation": {
+            "min_length": 5,
+            "max_length": 100,
+            "discouraged_patterns": ["procedure$", "policy$", "^the "]
+          }
+        },
+        {
+          "id": "overview",
+          "prompt": "Briefly describe the purpose of this procedure (1-2 sentences)",
+          "guidance": "Start with 'This procedure...' and explain what it accomplishes",
+          "validation": {
+            "max_sentences": 3,
+            "max_words": 50
+          }
+        },
+        {
+          "id": "prerequisites",
+          "prompt": "What must be true BEFORE someone can perform this procedure?",
+          "input_type": "list",
+          "suggestions_by_type": {
+            "system": ["System access granted", "Login credentials", "Required training completed"],
+            "compliance": ["Appropriate approval authority", "Required certifications", "Access to reporting systems"],
+            "operational": ["System access", "Required materials available"],
+            "service": ["Member account pulled up", "Identity verified"],
+            "admin": ["Appropriate permissions", "Required forms available"]
+          }
+        },
+        {
+          "id": "quick_reference",
+          "prompt": "Does this procedure have critical reference values staff need at-a-glance?",
+          "conditional": true,
+          "show_when": "procedure_type in ['operational', 'system', 'compliance']",
+          "prefill_suggestions": {
+            "card_services": [
+              {"label": "Card@Once Support", "value": "1-800-237-3387"},
+              {"label": "Consumer Debit BIN", "value": "41139300"},
+              {"label": "Business Debit BIN", "value": "42616400"}
+            ],
+            "wire_transfers": [
+              {"label": "Wire Cutoff Time", "value": "3:00 PM local"},
+              {"label": "Fed Wire Routing", "value": "Contact Operations"}
+            ]
+          }
+        },
+        {
+          "id": "related_links",
+          "prompt": "Are there related policies, procedures, or forms?",
+          "input_type": "categorized_list",
+          "categories": ["Policies", "Procedures", "Forms"]
+        }
+      ]
+    },
+
+    "step_construction": {
+      "phase_number": 3,
+      "estimated_minutes": "10-30",
+      "loop_structure": {
+        "section_prompt": "What section are we working on?",
+        "step_prompt": "What action does the user take in this step?",
+        "substep_prompt": "Does this step have sub-actions?",
+        "continue_prompt": "Add another step to this section?",
+        "section_complete_prompt": "Add another section?"
+      },
+      "inline_checks": [
+        "terminology",
+        "sentence_length",
+        "action_verb",
+        "passive_voice"
+      ],
+      "decision_points": [
+        "screenshot_needed",
+        "callout_needed",
+        "verification_step_needed",
+        "troubleshooting_entry_needed"
+      ]
+    },
+
+    "quality_assurance": {
+      "phase_number": 4,
+      "estimated_minutes": "3-5",
+      "automated_checks": [
+        {
+          "id": "terminology",
+          "name": "Terminology Compliance",
+          "tool": "terminology_validator.py"
+        },
+        {
+          "id": "sentence_length",
+          "name": "Sentence Length",
+          "threshold": 25,
+          "max": 35
+        },
+        {
+          "id": "passive_voice",
+          "name": "Passive Voice Detection",
+          "patterns": ["should be", "needs to be", "must be", "will be", "can be", "is to be"]
+        },
+        {
+          "id": "acronym_definitions",
+          "name": "Acronym Definitions",
+          "required_list": ["BIN", "PIN", "MICR", "GOLD", "ATM", "ACH", "BSA", "AML", "CTR", "SAR"]
+        }
+      ],
+      "gap_analysis": [
+        "missing_troubleshooting",
+        "missing_verification_steps",
+        "missing_screenshots_for_complex_steps",
+        "undefined_acronyms",
+        "compliance_callouts_needed"
+      ]
+    },
+
+    "output": {
+      "phase_number": 5,
+      "estimated_minutes": "2-3",
+      "deliverables": [
+        {
+          "id": "procedure_doc",
+          "name": "Procedure Document",
+          "format": "docx",
+          "includes": ["formatted_content", "screenshot_placeholders"]
+        },
+        {
+          "id": "screenshot_guide",
+          "name": "Screenshot Capture Guide",
+          "format": "markdown",
+          "includes": ["placeholder_list", "capture_instructions", "annotation_guidance"]
+        },
+        {
+          "id": "terminology_report",
+          "name": "Terminology Report",
+          "format": "text",
+          "conditional": true,
+          "show_when": "violations_found"
+        }
+      ]
+    }
+  },
+
+  "decision_trees": {
+    "screenshot_needed": {
+      "triggers": {
+        "high_priority": [
+          {"pattern": "login|sign in|authenticate", "reason": "Login screens prevent access issues"},
+          {"pattern": "enter|input|type.*(?:number|amount|date)", "reason": "Data entry benefits from visual reference"},
+          {"pattern": "error|warning|alert", "reason": "Error states help troubleshooting"},
+          {"pattern": "dropdown|select.*from|choose.*from", "reason": "Selection options may not be obvious"}
+        ],
+        "medium_priority": [
+          {"pattern": "navigate|go to|open", "reason": "Navigation can be clarified visually"},
+          {"pattern": "confirm|verify|review", "reason": "Confirmation screens prevent mistakes"},
+          {"pattern": "settings|configuration|options", "reason": "Settings pages can be complex"}
+        ],
+        "low_priority": [
+          {"pattern": "click|select.*button|press", "reason": "Simple button clicks usually don't need screenshots"},
+          {"pattern": "ok|cancel|close", "reason": "Standard dialog buttons are self-explanatory"}
+        ]
+      },
+      "recommendation_template": "This step involves {action_type}. Screenshots are {priority} priority for this type of action because {reason}."
+    },
+
+    "callout_needed": {
+      "triggers": {
+        "critical": [
+          {"pattern": "must|required|mandatory|compliance|legal", "callout_type": "critical"},
+          {"pattern": "\\$10,?000|ctr|currency transaction", "callout_type": "critical", "message": "CTR filing requirements"},
+          {"pattern": "never|do not|prohibited|forbidden", "callout_type": "critical"}
+        ],
+        "warning": [
+          {"pattern": "careful|caution|attention|important", "callout_type": "warning"},
+          {"pattern": "deadline|time.?sensitive|by.*(?:end of day|eod|close)", "callout_type": "warning"},
+          {"pattern": "irreversible|cannot be undone|permanent", "callout_type": "warning"}
+        ],
+        "tip": [
+          {"pattern": "best practice|recommended|suggestion|tip", "callout_type": "tip"},
+          {"pattern": "shortcut|faster|easier|efficient", "callout_type": "tip"}
+        ],
+        "info": [
+          {"pattern": "note|fyi|for your information|remember", "callout_type": "info"},
+          {"pattern": "example|for instance|such as", "callout_type": "info"}
+        ]
+      }
+    },
+
+    "verification_step_needed": {
+      "triggers": [
+        {"pattern": "enter|input|type", "suggestion": "Add verification step after data entry"},
+        {"pattern": "transfer|move|send", "suggestion": "Add confirmation step before completing"},
+        {"pattern": "delete|remove|cancel", "suggestion": "Add confirmation step for destructive action"}
+      ],
+      "recommendation": "Adult learning principle: Verification steps after data entry reduce errors by 40%."
+    },
+
+    "troubleshooting_entry_needed": {
+      "triggers": [
+        {"pattern": "error|fail|issue|problem", "suggestion": "Add to troubleshooting table"},
+        {"pattern": "contact.*support|call.*help", "suggestion": "Document escalation path"},
+        {"pattern": "try again|retry|restart", "suggestion": "Document recovery steps"}
+      ]
+    }
+  },
+
+  "templates": {
+    "screenshot_placeholder": {
+      "format": "┌─────────────────────────────────────────────────────────────────┐\n│  📷 SCREENSHOT PLACEHOLDER — FIGURE {figure_number}                         │\n├─────────────────────────────────────────────────────────────────┤\n│  CAPTURE: {capture_description}                                 │\n│  SYSTEM:  {system_name}                                         │\n│  SHOW:    {visible_elements}                                    │\n│  FOCUS:   {annotation_target}                                   │\n│  SIZE:    {size_recommendation}                                 │\n│  ANNOTATIONS:                                                   │\n│    {annotation_suggestions}                                     │\n│  NOTES:   {additional_notes}                                    │\n└─────────────────────────────────────────────────────────────────┘"
+    },
+
+    "decision_point": {
+      "format": "DECISION: {topic}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nOption A: {option_a_label}\n  ✓ {option_a_benefit_1}\n  ✓ {option_a_benefit_2}\n  ✗ {option_a_drawback}\n\nOption B: {option_b_label}\n  ✓ {option_b_benefit}\n  ✗ {option_b_drawback_1}\n  ✗ {option_b_drawback_2}\n\n📋 RECOMMENDATION: {recommendation}\n   {rationale}\n\n→ {option_a_label}\n→ {option_b_label}\n→ Tell me more"
+    },
+
+    "suggestion": {
+      "format": "💡 SUGGESTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nYou wrote: \"{user_input}\"\n\n{observation}\n\n{rationale}\n\nSuggested action:\n  \"{suggested_text}\"\n\n→ Accept suggestion\n→ Skip\n→ Tell me more"
+    }
+  },
+
+  "department_defaults": {
+    "Card Services": {
+      "quick_reference": [
+        {"label": "Card@Once Support", "value": "1-800-237-3387"},
+        {"label": "Consumer Debit BIN", "value": "41139300"},
+        {"label": "Business Debit BIN", "value": "42616400"},
+        {"label": "Card@Once URL", "value": "https://cardatonce.eftsource.com"}
+      ],
+      "common_systems": ["Card@Once", "GOLD", "FIS Payment One"]
+    },
+    "Member Services": {
+      "quick_reference": [
+        {"label": "Member Support", "value": "907-790-5050"}
+      ],
+      "common_systems": ["GOLD", "Online Banking Admin"]
+    },
+    "Operations": {
+      "quick_reference": [],
+      "common_systems": ["GOLD", "FedLine", "ACH System"]
+    },
+    "Compliance": {
+      "quick_reference": [
+        {"label": "BSA Officer", "value": "[Name]"},
+        {"label": "CTR Threshold", "value": "$10,000"}
+      ],
+      "common_systems": ["Verafin", "GOLD"]
+    }
+  }
+}

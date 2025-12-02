@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-12-02T03:57:36.694933Z",
+  "updated_at": "2025-12-02T04:37:08.440362Z",
   "tasks": [
     {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
@@ -235,6 +235,46 @@
       "line": 1050,
       "keyword": "NOTE",
       "message": "\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 352,
+      "keyword": "NOTE",
+      "message": "suggestions in comments)",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\wizard_prompts.json",
+      "line": 297,
+      "keyword": "NOTE",
+      "message": "|fyi|for your information|remember\", \"callout_type\": \"info\"},",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\suggestion_triggers.json",
+      "line": 163,
+      "keyword": "NOTE",
+      "message": "|remember|keep in mind|fyi|for your information)\\\\b\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\scripts\\revision_analyzer.py",
+      "line": 121,
+      "keyword": "NOTE",
+      "message": "|important|warning|caution)\\s*:?\\s*.{20,}\",",
       "owner": null,
       "due": null,
       "priority": null,

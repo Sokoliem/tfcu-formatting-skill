@@ -1,0 +1,319 @@
+{
+  "version": "1.0",
+  "description": "Pattern matching rules for proactive suggestions in the Interactive Procedure Wizard",
+
+  "suggestion_categories": {
+    "verification_steps": {
+      "description": "Suggest verification after data entry or critical actions",
+      "triggers": [
+        {
+          "pattern": "\\b(enter|input|type)\\b.*\\b(number|amount|date|name|address|account)\\b",
+          "suggestion_type": "add_step",
+          "message": "I noticed this is a data entry step. Best practice suggests adding a verification step afterward.",
+          "rationale": "Adult learning principle: Verification steps after data entry reduce errors by 40% and build muscle memory for accuracy.",
+          "suggested_text": "Verify the {field} displays correctly before proceeding",
+          "priority": "medium"
+        },
+        {
+          "pattern": "\\b(transfer|send|move|submit)\\b.*\\b(funds|money|payment|transaction)\\b",
+          "suggestion_type": "add_step",
+          "message": "This involves a financial transaction. Consider adding a verification step.",
+          "rationale": "Financial transactions are difficult to reverse. Verification prevents costly errors.",
+          "suggested_text": "Verify the transaction details before confirming",
+          "priority": "high"
+        },
+        {
+          "pattern": "\\b(delete|remove|cancel|void)\\b",
+          "suggestion_type": "add_callout",
+          "message": "This is a destructive action. Consider adding a warning callout.",
+          "rationale": "Destructive actions should be clearly marked to prevent accidental execution.",
+          "callout_type": "warning",
+          "suggested_text": "This action cannot be undone. Verify before proceeding.",
+          "priority": "high"
+        }
+      ]
+    },
+
+    "screenshot_recommendations": {
+      "description": "Recommend screenshots based on step content",
+      "triggers": [
+        {
+          "pattern": "\\b(login|sign in|log in|authenticate)\\b",
+          "priority": "high",
+          "reason": "Login screens are the first barrier to entry. Screenshots prevent access issues.",
+          "capture_guidance": {
+            "show": "Username and password fields, login button",
+            "focus": "Login button or credentials area",
+            "annotations": ["Callout on username field", "Callout on password field", "Highlight login button"]
+          }
+        },
+        {
+          "pattern": "\\b(dropdown|drop-down|select.*from|choose.*from)\\b",
+          "priority": "medium",
+          "reason": "Dropdown options may not be obvious from text description alone.",
+          "capture_guidance": {
+            "show": "Dropdown expanded with all options visible",
+            "focus": "The correct option to select",
+            "annotations": ["Highlight the dropdown", "Callout on correct selection"]
+          }
+        },
+        {
+          "pattern": "\\b(navigate|go to|open|access)\\b.*\\b(menu|screen|page|tab|section)\\b",
+          "priority": "medium",
+          "reason": "Navigation paths can be clarified visually, especially in complex applications.",
+          "capture_guidance": {
+            "show": "Navigation menu or path to destination",
+            "focus": "The menu item or link to click",
+            "annotations": ["Arrow or highlight showing navigation path"]
+          }
+        },
+        {
+          "pattern": "\\b(error|warning|alert|message)\\b.*\\b(appears|displays|shows)\\b",
+          "priority": "high",
+          "reason": "Error messages help with troubleshooting and recognition.",
+          "capture_guidance": {
+            "show": "The error message in its context",
+            "focus": "Error text and any action buttons",
+            "annotations": ["Highlight error message area"]
+          }
+        },
+        {
+          "pattern": "\\b(form|application|request)\\b.*\\b(fill|complete|enter)\\b",
+          "priority": "high",
+          "reason": "Forms with multiple fields benefit from visual reference.",
+          "capture_guidance": {
+            "show": "Complete form with all fields visible",
+            "focus": "Required fields and submit button",
+            "annotations": ["Numbered callouts on each field in order"]
+          }
+        },
+        {
+          "pattern": "\\b(confirmation|success|complete)\\b.*\\b(screen|message|dialog)\\b",
+          "priority": "medium",
+          "reason": "Confirmation screens show users what success looks like.",
+          "capture_guidance": {
+            "show": "Confirmation message and any reference numbers",
+            "focus": "Success indicator",
+            "annotations": ["Highlight confirmation message"]
+          }
+        }
+      ]
+    },
+
+    "callout_suggestions": {
+      "description": "Suggest callout boxes based on content patterns",
+      "triggers": [
+        {
+          "pattern": "\\$\\s*10,?000|\\bten thousand\\b|\\bctr\\b|\\bcurrency transaction\\b",
+          "callout_type": "critical",
+          "icon": "⛔",
+          "message": "This amount triggers Currency Transaction Report (CTR) requirements.",
+          "suggested_text": "Transactions of $10,000 or more require CTR filing. Verify all documentation is complete.",
+          "category": "compliance"
+        },
+        {
+          "pattern": "\\b(suspicious|unusual|sar|structuring)\\b.*\\b(activity|transaction|pattern)\\b",
+          "callout_type": "critical",
+          "icon": "⛔",
+          "message": "This triggers SAR consideration requirements.",
+          "suggested_text": "If suspicious activity is identified, follow SAR filing procedures. Do not alert the member.",
+          "category": "compliance"
+        },
+        {
+          "pattern": "\\b(never|do not|don't|cannot|must not|prohibited)\\b",
+          "callout_type": "critical",
+          "icon": "⛔",
+          "message": "This contains a prohibition that staff must not violate.",
+          "suggested_text": null,
+          "category": "policy"
+        },
+        {
+          "pattern": "\\b(must|required|mandatory|always)\\b",
+          "callout_type": "warning",
+          "icon": "⚠️",
+          "message": "This is a mandatory requirement.",
+          "suggested_text": null,
+          "category": "policy"
+        },
+        {
+          "pattern": "\\b(deadline|by close|end of day|within \\d+|time.?sensitive)\\b",
+          "callout_type": "warning",
+          "icon": "⚠️",
+          "message": "This has a time constraint that should be highlighted.",
+          "suggested_text": null,
+          "category": "operations"
+        },
+        {
+          "pattern": "\\b(irreversible|cannot be undone|permanent|final)\\b",
+          "callout_type": "warning",
+          "icon": "⚠️",
+          "message": "This action has permanent consequences.",
+          "suggested_text": "This action cannot be reversed. Verify all information before proceeding.",
+          "category": "operations"
+        },
+        {
+          "pattern": "\\b(tip|hint|best practice|pro tip|shortcut)\\b",
+          "callout_type": "tip",
+          "icon": "✅",
+          "message": "This is a helpful tip worth highlighting.",
+          "suggested_text": null,
+          "category": "efficiency"
+        },
+        {
+          "pattern": "\\b(note|remember|keep in mind|fyi|for your information)\\b",
+          "callout_type": "info",
+          "icon": "ℹ️",
+          "message": "This is informational content that may benefit from a callout.",
+          "suggested_text": null,
+          "category": "general"
+        },
+        {
+          "pattern": "\\b(example|for instance|such as|e\\.g\\.)\\b",
+          "callout_type": "info",
+          "icon": "ℹ️",
+          "message": "Examples help clarify procedures. Consider formatting as an info callout.",
+          "suggested_text": null,
+          "category": "learning"
+        }
+      ]
+    },
+
+    "troubleshooting_entries": {
+      "description": "Suggest troubleshooting table entries",
+      "triggers": [
+        {
+          "pattern": "\\b(error|fail|issue|problem)\\b.*\\b(message|occurs|appears)\\b",
+          "message": "This describes an error condition. Should I add it to the troubleshooting table?",
+          "entry_template": {
+            "issue": "Error message appears during {step}",
+            "cause": "[Specify cause]",
+            "resolution": "[Specify resolution]"
+          }
+        },
+        {
+          "pattern": "\\b(contact|call|reach out)\\b.*\\b(support|help desk|IT|supervisor)\\b",
+          "message": "This mentions escalation. Should I document the escalation path in troubleshooting?",
+          "entry_template": {
+            "issue": "Unable to resolve issue",
+            "cause": "Issue requires additional support",
+            "resolution": "Contact {support_contact}"
+          }
+        },
+        {
+          "pattern": "\\b(try again|retry|restart|refresh)\\b",
+          "message": "This mentions a recovery action. Should I add recovery steps to troubleshooting?",
+          "entry_template": {
+            "issue": "{action} does not complete successfully",
+            "cause": "Temporary system issue or timeout",
+            "resolution": "Wait 30 seconds and retry. If issue persists, contact support."
+          }
+        },
+        {
+          "pattern": "\\b(if|when)\\b.*\\b(doesn't|does not|won't|will not|isn't|is not)\\b.*\\b(work|appear|show|display|respond)\\b",
+          "message": "This describes a potential failure scenario. Add to troubleshooting?",
+          "entry_template": {
+            "issue": "{element} does not {expected_behavior}",
+            "cause": "[Specify potential causes]",
+            "resolution": "[Specify resolution steps]"
+          }
+        }
+      ]
+    },
+
+    "quick_reference_items": {
+      "description": "Suggest Quick Reference entries",
+      "triggers": [
+        {
+          "pattern": "\\b(call|phone|contact)\\b.*\\b(\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}|1-?\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4})\\b",
+          "message": "Phone number detected. Add to Quick Reference for easy access?",
+          "extract_value": true,
+          "label_suggestion": "Support Phone"
+        },
+        {
+          "pattern": "\\b(bin|bank identification number)\\b.*\\b(\\d{6,8})\\b",
+          "message": "BIN number detected. Add to Quick Reference?",
+          "extract_value": true,
+          "label_suggestion": "BIN"
+        },
+        {
+          "pattern": "\\bhttps?://[^\\s]+",
+          "message": "URL detected. Add to Quick Reference?",
+          "extract_value": true,
+          "label_suggestion": "System URL"
+        },
+        {
+          "pattern": "\\b(routing|aba)\\s*(number|#)?\\s*:?\\s*(\\d{9})\\b",
+          "message": "Routing number detected. Add to Quick Reference?",
+          "extract_value": true,
+          "label_suggestion": "Routing Number"
+        },
+        {
+          "pattern": "\\b(threshold|limit|maximum|minimum)\\b.*\\$[\\d,]+",
+          "message": "Monetary threshold detected. Add to Quick Reference?",
+          "extract_value": true,
+          "label_suggestion": "Limit"
+        }
+      ]
+    },
+
+    "section_suggestions": {
+      "description": "Suggest additional sections based on content",
+      "triggers": [
+        {
+          "condition": "no_troubleshooting_section",
+          "content_patterns": ["error", "issue", "problem", "fail", "contact support"],
+          "message": "Your procedure mentions potential issues but has no troubleshooting section. Would you like to add one?",
+          "priority": "medium"
+        },
+        {
+          "condition": "no_quick_reference",
+          "content_patterns": ["phone", "bin", "url", "support"],
+          "message": "Your procedure references values that staff might need quickly. Add a Quick Reference section?",
+          "priority": "medium"
+        },
+        {
+          "condition": "compliance_type_no_regulatory",
+          "procedure_type": "compliance",
+          "message": "This is a compliance procedure but has no regulatory references. Add a regulatory section?",
+          "priority": "high"
+        }
+      ]
+    },
+
+    "institutional_knowledge": {
+      "description": "Patterns indicating experiential/institutional knowledge to preserve",
+      "triggers": [
+        {
+          "pattern": "\\b(always|never|make sure|don't forget|remember to)\\b.*\\b(because|otherwise|or else)\\b",
+          "message": "This appears to be learned guidance from experience. Preserve carefully.",
+          "action": "flag_for_preservation"
+        },
+        {
+          "pattern": "\\b(in my experience|we've found|historically|usually|typically)\\b",
+          "message": "This contains institutional knowledge. Verify with SME before changing.",
+          "action": "flag_for_review"
+        },
+        {
+          "pattern": "\\b(workaround|trick|tip from|learned the hard way)\\b",
+          "message": "This is experiential knowledge. Preserve the insight while improving clarity.",
+          "action": "flag_for_preservation"
+        },
+        {
+          "pattern": "(?:contact|call|ask)\\s+(?:name|person|department).*(?:if|when|for)",
+          "message": "This references specific contacts. Verify these are still current.",
+          "action": "flag_for_verification"
+        }
+      ]
+    }
+  },
+
+  "response_templates": {
+    "suggestion_accepted": "Great! I've added that to your procedure.",
+    "suggestion_skipped": "No problem. Moving on.",
+    "tell_me_more": {
+      "verification_steps": "Verification steps serve two purposes:\n1. They catch errors before they become problems\n2. They build habits that reduce future errors\n\nIn credit union operations, data entry errors can cause member frustration, compliance issues, or financial losses. A quick verification step takes seconds but prevents hours of correction work.",
+      "screenshot_value": "Screenshots add value when:\n• The UI isn't intuitive from the description\n• Multiple similar options could cause confusion\n• New staff frequently ask about this step\n• Errors at this step are costly or common\n\nScreenshots may be skipped when the action is simple and the description is clear enough.",
+      "callout_types": "TFCU uses four callout types:\n\n⛔ CRITICAL: Compliance requirements, security, must-do items\n⚠️ WARNING: Caution needed, potential for error, time-sensitive\nℹ️ INFO: Helpful context, additional information, notes\n✅ TIP: Best practices, efficiency suggestions, shortcuts"
+    }
+  }
+}

@@ -1,8 +1,8 @@
 # TODO Index
 
-Updated: 2025-12-02T03:57:36.694933Z
+Updated: 2025-12-02T04:37:08.440362Z
 
-- Total tasks: 23
+- Total tasks: 27
 - Overdue: 0
 - Priority 1: 0
 
@@ -29,8 +29,20 @@ Updated: 2025-12-02T03:57:36.694933Z
 - L117 NOTE: | ℹ️ |  |  | Helpful context, tips, additional info | [#d1ecf1,2e74b5]
 - L130 NOTE: { bg: "D1ECF1", border: "2E74B5", icon: "ℹ️" },
 
+## C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter\resources\interactive_wizard.md
+- L352 NOTE: suggestions in comments)
+
+## C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter\resources\suggestion_triggers.json
+- L163 NOTE: |remember|keep in mind|fyi|for your information)\\b",
+
+## C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter\resources\wizard_prompts.json
+- L297 NOTE: |fyi|for your information|remember", "callout_type": "info"},
+
 ## C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter\screenshot_processor.py
 - L1579 NOTE: preprocessing with crop/resize should be applied if needed
+
+## C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter\scripts\revision_analyzer.py
+- L121 NOTE: |important|warning|caution)\s*:?\s*.{20,}",
 
 ## C:\Users\emsok\Downloads\TFCU-procedure-formatter\extracted-skill\tfcu-procedure-formatter\validator\validated-helpers.js
 - L143 NOTE: /INFO, TIP
