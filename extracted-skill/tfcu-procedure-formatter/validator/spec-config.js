@@ -168,6 +168,15 @@ const SpecConfig = {
       text: 55, // TW10: 55%
       image: 45, // TW11: 45%
     },
+
+    // Figure Index appendix table
+    figureIndex: {
+      figureNum: 10, // TW12: 10% - Figure number column
+      title: 20, // TW13: 20% - Title column
+      description: 35, // TW14: 35% - Description column
+      section: 20, // TW15: 20% - Section column
+      step: 15, // TW16: 15% - Step reference column
+    },
   },
 
   // ============================================================
@@ -200,19 +209,56 @@ const SpecConfig = {
   },
 
   // ============================================================
+  // SCREENSHOT ANNOTATION CALLOUTS
+  // ============================================================
+  // Numbered callouts on screenshots (1), (2), (3) must have matching
+  // colored text in the step descriptions
+  screenshotCallouts: {
+    // Default callout color for numbered annotations
+    defaultColor: "154747", // Teal - matches TFCU branding
+
+    // Text reference format in steps
+    // Example: "Select the dropdown (Callout 1)" - "(Callout 1)" should be teal
+    referenceFormat: "(Callout {n})",
+
+    // The callout reference text MUST match the annotation color
+    // If screenshot has teal (1), text "(Callout 1)" must be teal
+    colorMatchingRule: "MANDATORY",
+
+    // Styling for callout references in text
+    referenceStyle: {
+      font: "Calibri",
+      size: 22, // 11pt - same as body text
+      bold: true,
+      // Color inherited from screenshot annotation color
+      colorInherit: true,
+    },
+
+    // Available annotation colors (match screenshot annotation tool colors)
+    annotationColors: {
+      teal: "154747", // Primary - use for most callouts
+      red: "C00000", // Critical/warning callouts
+      blue: "2E74B5", // Informational callouts
+      green: "548235", // Success/confirmation callouts
+      gold: "FFC000", // Caution callouts
+    },
+  },
+
+  // ============================================================
   // STRUCTURE REQUIREMENTS (8 requirements: ST01-ST08)
   // ============================================================
   structure: {
     requiredSections: [
       "header", // ST01: Header table always present
-      "revisionHistory", // ST02: Revision history always at end
+      "figureIndex", // ST02: Figure Index appendix (if screenshots exist)
+      "revisionHistory", // ST03: Revision history always at end
     ],
     optionalSections: [
-      "quickReference", // ST03: Only if critical info exists
-      "tableOfContents", // ST04: Only if >3 pages
-      "prerequisites", // ST05: Only if applicable
-      "troubleshooting", // ST06: Only if issues documented
-      "reports", // ST07: Only if related reports exist
+      "quickReference", // ST04: Only if critical info exists
+      "tableOfContents", // ST05: Only if >3 pages
+      "prerequisites", // ST06: Only if applicable
+      "troubleshooting", // ST07: Only if issues documented
+      "reports", // ST08: Only if related reports exist
     ],
     rules: {
       noEmptyRevisionRows: true, // ST08: Never generate empty rows
@@ -220,6 +266,31 @@ const SpecConfig = {
         // When no history provided
         changes: "Initial version",
       },
+    },
+    // ST09-ST11: Conditional validation rules (enforced by self-validation block)
+    conditionalRules: {
+      // ST09: Figure Index enforcement rule
+      figureIndexRequired: {
+        condition: "imageCount > 0",
+        section: "figureIndex",
+        errorMessage:
+          "Figure Index appendix required when screenshots are present",
+        placement: "before revisionHistory",
+      },
+      // ST10: Annotation pipeline enforcement
+      annotationPipelineRequired: {
+        condition: "rawImagesExist && !annotatedImagesExist",
+        errorMessage:
+          "Raw images detected but annotation pipeline not run. Execute screenshot_processor.py first.",
+        blocking: true,
+      },
+    },
+    // ST11: Dynamic date validation
+    dateValidation: {
+      rejectPastYears: true, // Reject if date year < current year
+      exampleDate: "December 2024", // Known hardcoded example to reject
+      errorMessage:
+        "Stale or hardcoded date detected - use getCurrentDate() helper",
     },
   },
 
@@ -270,6 +341,148 @@ const SpecConfig = {
     "1.5pt": 12,
     "2pt": 16,
     "4pt": 32,
+  },
+
+  // ============================================================
+  // CROSS-DOCUMENT FORMATTING (applies to ALL output documents)
+  // ============================================================
+  // These formatting rules apply uniformly across:
+  // - Procedure documents
+  // - Training assessments
+  // - Quick reference cards
+  // - Validation reports
+  crossDocumentFormatting: {
+    // All documents use same fonts
+    fonts: {
+      primary: "Calibri", // Body text, headers, callouts, questions
+      monospace: "Consolas", // BINs, phone numbers, account numbers, code
+    },
+
+    // Brand colors apply to all documents
+    brandColors: {
+      headerBg: "154747", // Dark teal - all document headers
+      headerText: "FFFFFF", // White text on headers
+      accentBg: "E8F4F4", // Light teal - secondary headers
+      accentText: "154747", // Dark teal text
+      bodyText: "000000", // Black body text
+      footerText: "666666", // Gray footer text
+    },
+
+    // Callout styling is consistent across all documents
+    calloutColors: {
+      critical: { bg: "F8D7DA", border: "C00000", icon: "⛔" },
+      warning: { bg: "FFF2CC", border: "FFC000", icon: "⚠️" },
+      info: { bg: "D1ECF1", border: "2E74B5", icon: "ℹ️" },
+      tip: { bg: "E2F0D9", border: "548235", icon: "✅" },
+    },
+
+    // Intervention marker styling - MUST be consistent across all documents
+    interventionMarkers: {
+      font: "Calibri",
+      size: 20, // 10pt
+      color: "C00000", // Red
+      bold: true,
+      italics: true,
+      highlight: "yellow",
+    },
+
+    // Document-specific overrides (where they differ)
+    documentTypes: {
+      procedure: {
+        orientation: "portrait",
+        pageSize: { width: 8.5, height: 11 },
+        margins: { top: 0.5, bottom: 0.5, left: 0.75, right: 0.75 },
+        bodyFontSize: 22, // 11pt
+        headerFontSize: 32, // 16pt
+      },
+      assessment: {
+        orientation: "portrait",
+        pageSize: { width: 8.5, height: 11 },
+        margins: { top: 0.5, bottom: 0.5, left: 0.75, right: 0.75 },
+        bodyFontSize: 22, // 11pt (same as procedure)
+        headerFontSize: 28, // 14pt
+        questionFontSize: 22, // 11pt
+        answerFontSize: 20, // 10pt
+      },
+      quickCard: {
+        orientation: "landscape",
+        pageSize: { width: 11, height: 8.5 },
+        margins: { top: 0.5, bottom: 0.5, left: 0.5, right: 0.5 },
+        bodyFontSize: 20, // 10pt (smaller for density)
+        headerFontSize: 24, // 12pt
+        sectionHeaderFontSize: 24, // 12pt
+      },
+      validationReport: {
+        orientation: "portrait",
+        pageSize: { width: 8.5, height: 11 },
+        margins: { top: 0.5, bottom: 0.5, left: 0.75, right: 0.75 },
+        bodyFontSize: 20, // 10pt
+        headerFontSize: 24, // 12pt
+      },
+    },
+  },
+
+  // ============================================================
+  // FILENAME CONVENTIONS (FN01-FN08)
+  // ============================================================
+  // Enforces consistent output filenames across all sessions
+  filenameConventions: {
+    // FN01: Allowed departments (exact match required after sanitization)
+    departments: [
+      "Card_Services",
+      "Member_Services",
+      "Operations",
+      "Lending",
+      "Accounting",
+      "Compliance",
+      "IT",
+      "HR",
+      "Marketing",
+    ],
+
+    // FN02: Separator character
+    separator: "_", // Underscores only, no spaces or hyphens
+
+    // FN03: Date format
+    dateFormat: "YYYYMM",
+
+    // FN04-FN07: Output file patterns
+    patterns: {
+      procedure: "{Department}_{ProcedureName}_{YYYYMM}.docx",
+      assessment: "{ProcedureName}_Assessment_{YYYYMM}.docx",
+      quickCard: "{ProcedureName}_QuickCard_{YYYYMM}.docx",
+      validationReport: "{ProcedureName}_ValidationReport.txt",
+    },
+
+    // FN08: Procedure name rules
+    procedureNameRules: {
+      maxLength: 50,
+      allowedCharsPattern: "^[A-Za-z0-9_]+$", // Alphanumeric + underscore only
+      titleCase: true,
+    },
+
+    // Department aliases for auto-correction
+    departmentAliases: {
+      "card services": "Card_Services",
+      cardservices: "Card_Services",
+      cards: "Card_Services",
+      "member services": "Member_Services",
+      memberservices: "Member_Services",
+      members: "Member_Services",
+      ops: "Operations",
+      operation: "Operations",
+      loans: "Lending",
+      loan: "Lending",
+      finance: "Accounting",
+      acct: "Accounting",
+      it: "IT",
+      tech: "IT",
+      technology: "IT",
+      hr: "HR",
+      "human resources": "HR",
+      mktg: "Marketing",
+      marketing: "Marketing",
+    },
   },
 };
 

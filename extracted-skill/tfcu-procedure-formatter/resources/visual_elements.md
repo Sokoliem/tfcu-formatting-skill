@@ -4,7 +4,16 @@ Implementation patterns for flowcharts, callout boxes, tables, and color-coding 
 
 ## Table of Contents (Clickable)
 
+> **CRITICAL FORMAT RULE**: TOC must be a SINGLE INLINE PARAGRAPH - NEVER a table or vertical list.
+
 For longer procedures, create a clickable TOC that links to section bookmarks.
+
+**Correct format:** `Contents: Overview • Prerequisites • Main Steps • Troubleshooting`
+
+**FORBIDDEN formats:**
+- ❌ Table with "CONTENTS" header row
+- ❌ Vertical bullet list
+- ❌ Any bordered/shaded container
 
 ### Implementation
 
@@ -79,6 +88,8 @@ children: [
 ---
 
 ## TFCU Brand Colors
+
+> **Note**: These values mirror `validator/spec-config.js`. Update spec-config.js first, then sync here.
 
 ```javascript
 const TFCU_COLORS = {
@@ -166,6 +177,113 @@ createCalloutBox("CRITICAL", "Always activate cards, even when reprinting.")
 - Put multiple instructions inside a single callout
 - Use WARNING for mere tips (use TIP instead)
 - Stack multiple callouts consecutively
+
+---
+
+## Intervention Markers (Anti-Hallucination)
+
+Intervention markers appear as **bold, red, italic text with yellow highlighting** to indicate content that requires human verification before the procedure can be approved. These markers prevent hallucination by making it explicit when the model was unsure or when TFCU-specific content needs confirmation.
+
+### Marker Types
+
+| Marker | Format | When Used |
+|--------|--------|-----------|
+| **VERIFY** | `[VERIFY: description]` | Pattern-extracted value needs confirmation |
+| **CONFIRM** | `[CONFIRM: description]` | Auto-generated content needs validation |
+| **SME INPUT** | `[SME INPUT REQUIRED: description]` | Missing TFCU-specific information |
+| **MISSING** | `[MISSING: description]` | Required field was not provided |
+| **CHECK** | `[CHECK: description]` | Inferred content with low confidence |
+| **SUGGESTED** | `[SUGGESTED: description]` | Auto-generated content not from source (e.g., quick card warnings) |
+
+### Styling Specification
+
+```javascript
+// Intervention marker style - bold, red, italic with yellow highlight for maximum visibility
+const INTERVENTION_MARKER = {
+  font: "Calibri",
+  size: 20,        // 10pt
+  color: "C00000", // Red
+  italics: true,
+  bold: true,
+  highlight: "yellow"  // Yellow background highlight
+};
+
+// Example implementation
+function createInterventionMarker(type, content) {
+  const prefixes = {
+    VERIFY: "[VERIFY: ",
+    CONFIRM: "[CONFIRM: ",
+    SME_INPUT: "[SME INPUT REQUIRED: ",
+    MISSING: "[MISSING: ",
+    CHECK: "[CHECK: ",
+    SUGGESTED: "[SUGGESTED: "
+  };
+
+  return new TextRun({
+    text: `${prefixes[type]}${content}]`,
+    font: INTERVENTION_MARKER.font,
+    size: INTERVENTION_MARKER.size,
+    color: INTERVENTION_MARKER.color,
+    italics: INTERVENTION_MARKER.italics,
+    bold: INTERVENTION_MARKER.bold,
+    highlight: INTERVENTION_MARKER.highlight
+  });
+}
+```
+
+### Visual Example
+
+In the generated DOCX, markers appear inline with surrounding text:
+
+```
+Contact Card@Once support at [SME INPUT REQUIRED: phone number] if the
+printer issue persists.
+```
+
+The bold, red, italic formatting with yellow highlight makes markers highly visible when reviewing the document:
+
+| Normal Text | Marker |
+|-------------|--------|
+| Black, roman | Red (#C00000), bold, italic |
+| No highlight | Yellow highlight |
+| Calibri 11pt | Calibri 10pt |
+| Standard | Stands out for immediate review |
+
+### When to Use Each Marker
+
+**VERIFY**: Use when a value was detected by pattern matching but hasn't been confirmed by the user.
+```
+Wire cutoff time: 3:00 PM [VERIFY: confirm this is still current]
+```
+
+**SME INPUT REQUIRED**: Use when critical TFCU-specific information is missing and cannot be inferred.
+```
+Transactions over [SME INPUT REQUIRED: daily limit amount] require supervisor approval.
+```
+
+**CONFIRM**: Use when the model generated content that seems reasonable but needs user validation.
+```
+This procedure applies to [CONFIRM: all branch locations?]
+```
+
+**SUGGESTED**: Use in Quick Cards when auto-generating warnings or prerequisites not from the source procedure.
+```
+⚠️ Always verify account number before proceeding [SUGGESTED: not from source procedure]
+```
+
+### Best Practices
+
+**Do:**
+- Use markers for ALL TFCU-specific content that wasn't explicitly provided
+- Include descriptive content in the marker (not just `[VERIFY]` alone)
+- Show marker count summary in the output section
+- Instruct users to search for red italic text before approving
+
+**Don't:**
+- Use markers for regulatory content (CTR $10,000, SAR requirements, etc.)
+- Remove markers when generating - they should appear in the output
+- Use markers for obvious/trivial items
+- Stack multiple markers consecutively
 
 ---
 
@@ -526,25 +644,115 @@ new Paragraph({
 
 ---
 
+## Screenshot Annotation Callouts (MANDATORY Color Matching)
+
+When screenshots include numbered callout annotations (1), (2), (3), the text references in procedure steps **MUST** match the callout color.
+
+### Color Matching Rule
+
+| Screenshot Callout Color | Text Reference Color |
+|--------------------------|----------------------|
+| Teal (#154747) | Teal (#154747) |
+| Red (#C00000) | Red (#C00000) |
+| Blue (#2E74B5) | Blue (#2E74B5) |
+| Green (#548235) | Green (#548235) |
+| Gold (#FFC000) | Gold (#FFC000) |
+
+### Example
+
+If a screenshot has a teal-colored `(1)` annotation pointing to a dropdown menu:
+
+**Correct:**
+```
+Select the card type from the dropdown (Callout 1).
+```
+Where "(Callout 1)" is formatted in **teal (#154747), bold**.
+
+**Incorrect:**
+```
+Select the card type from the dropdown (Callout 1).
+```
+Where "(Callout 1)" is plain black text.
+
+### Implementation
+
+```javascript
+const { SpecConfig } = require('./validator/spec-config');
+
+// Get callout color from spec config
+const calloutColor = SpecConfig.screenshotCallouts.annotationColors.teal;
+
+// Create callout reference with matching color
+function createCalloutReference(calloutNumber, color = "154747") {
+  return new TextRun({
+    text: `(Callout ${calloutNumber})`,
+    font: "Calibri",
+    size: 22,  // 11pt - same as body text
+    bold: true,
+    color: color  // MUST match screenshot annotation color
+  });
+}
+
+// Usage in step text
+new Paragraph({
+  children: [
+    new TextRun({ text: "Select the card type from the dropdown ", size: 22 }),
+    createCalloutReference(1, "154747"),  // Teal to match screenshot
+    new TextRun({ text: ".", size: 22 })
+  ]
+})
+```
+
+### Available Callout Colors
+
+| Color Name | Hex Code | Use Case |
+|------------|----------|----------|
+| Teal | #154747 | Primary - most callouts (matches TFCU branding) |
+| Red | #C00000 | Critical actions, warnings, do-not-click areas |
+| Blue | #2E74B5 | Informational, secondary actions |
+| Green | #548235 | Success indicators, confirmation buttons |
+| Gold | #FFC000 | Caution, attention-needed areas |
+
+### Best Practices
+
+**Do:**
+- Use teal (#154747) as the default callout color for consistency
+- Match EVERY callout reference to its screenshot annotation color
+- Use bold formatting for callout references to improve visibility
+- Number callouts sequentially within each screenshot
+
+**Don't:**
+- Use different colors for the same callout across text and screenshot
+- Skip callout numbers (1, 2, 4 instead of 1, 2, 3)
+- Use more than 5-6 callouts per screenshot
+- Mix color schemes inconsistently within a procedure
+
+---
+
 ## Headers and Footers
 
 ### Footer Implementation
 
+Footer includes department, procedure name, page number, and **skill version watermark** (subtle gray, inline).
+
+Format: `Card Services | Procedure Name | Page X of Y  ·  v6.0`
+
 ```javascript
-const { Footer, Paragraph, TextRun, TabStopType, TabStopPosition, PageNumber } = require('docx');
+const { Footer, Paragraph, TextRun, AlignmentType, PageNumber } = require('docx');
+
+// Skill version - sync with SKILL.md and REFERENCE.md when bumping versions
+const SKILL_VERSION = "v6.0";
 
 const footer = new Footer({
   children: [new Paragraph({
-    tabStops: [
-      { type: TabStopType.CENTER, position: TabStopPosition.MAX / 2 },
-      { type: TabStopType.RIGHT, position: TabStopPosition.MAX }
-    ],
+    alignment: AlignmentType.CENTER,
     children: [
-      new TextRun("Card Services"),           // Left: Department
-      new TextRun("\t"),                       // Tab to center
-      new TextRun("\t"),                       // Tab to right
-      new TextRun("Card@Once Procedure Page "), // Right: Procedure name
-      new TextRun({ children: [PageNumber.CURRENT] })
+      new TextRun({ text: "Card Services | Card@Once Procedure | Page ", size: 18, color: "666666" }),
+      new TextRun({ children: [PageNumber.CURRENT], size: 18, color: "666666" }),
+      new TextRun({ text: " of ", size: 18, color: "666666" }),
+      new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 18, color: "666666" }),
+      // Version watermark - subtle, inline with separator
+      new TextRun({ text: `  ·  ${SKILL_VERSION}`, size: 16, color: "AAAAAA" })
     ]
   })]
 });

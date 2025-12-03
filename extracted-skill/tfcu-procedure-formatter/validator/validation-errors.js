@@ -315,6 +315,81 @@ class InputValidationError extends ValidationError {
   }
 }
 
+/**
+ * Filename validation errors
+ */
+class FilenameValidationError extends ValidationError {
+  /**
+   * @param {string} issue - Description of the filename issue
+   * @param {Object} details - Additional details (input, sanitized, etc.)
+   */
+  constructor(issue, details = {}) {
+    super(
+      `Filename validation: ${issue}`,
+      "filename",
+      details.input || null,
+      details.expected || null,
+    );
+    this.name = "FilenameValidationError";
+    this.issue = issue;
+    this.details = details;
+    if (details.sanitized) {
+      this.suggestion = `Auto-corrected to: "${details.sanitized}"`;
+    }
+  }
+
+  /**
+   * Create error for invalid department
+   * @param {string} department - Invalid department provided
+   * @param {string[]} validDepartments - List of valid departments
+   * @returns {FilenameValidationError}
+   */
+  static invalidDepartment(department, validDepartments) {
+    const err = new FilenameValidationError(
+      `Invalid department "${department}"`,
+      {
+        input: department,
+        expected: validDepartments,
+      },
+    );
+    err.suggestion = `Select from: ${validDepartments.join(", ")}`;
+    return err;
+  }
+
+  /**
+   * Create error for procedure name that was sanitized
+   * @param {string} original - Original procedure name
+   * @param {string} sanitized - Sanitized procedure name
+   * @returns {FilenameValidationError}
+   */
+  static procedureNameSanitized(original, sanitized) {
+    const err = new FilenameValidationError(`Procedure name sanitized`, {
+      input: original,
+      sanitized: sanitized,
+    });
+    err.severity = "warning";
+    return err;
+  }
+
+  /**
+   * Create error for department that was auto-corrected
+   * @param {string} original - Original department input
+   * @param {string} corrected - Corrected department name
+   * @returns {FilenameValidationError}
+   */
+  static departmentCorrected(original, corrected) {
+    const err = new FilenameValidationError(
+      `Department auto-corrected from "${original}" to "${corrected}"`,
+      {
+        input: original,
+        sanitized: corrected,
+      },
+    );
+    err.severity = "warning";
+    return err;
+  }
+}
+
 module.exports = {
   ValidationError,
   FontValidationError,
@@ -326,4 +401,5 @@ module.exports = {
   TableValidationError,
   CalloutValidationError,
   InputValidationError,
+  FilenameValidationError,
 };

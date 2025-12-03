@@ -1,35 +1,84 @@
 {
-  "version": "1.0",
-  "description": "Pattern matching rules for proactive suggestions in the Interactive Procedure Wizard",
+  "version": "2.0",
+  "description": "Pattern matching rules for AUTO-INSERT in the Interactive Procedure Wizard - v5.0+ with mandatory enforcement",
+
+  "auto_insert_config": {
+    "description": "All patterns use auto_insert action by default. Documents generate with [SUGGESTED] markers - user reviews post-output.",
+    "default_action": "auto_insert",
+    "marker_type": "SUGGESTED",
+    "blocking": false
+  },
+
+  "terminology_auto_correction": {
+    "description": "Terminology violations are auto-corrected by the model during generation (not user-fixed)",
+    "enabled": true,
+    "rules": [
+      {
+        "pattern": "\\b(click|choose|pick)\\b",
+        "replacement": "select",
+        "auto_correct": true,
+        "rationale": "TFCU standard: 'select' is preferred (works for mouse, keyboard, touch)"
+      },
+      {
+        "pattern": "\\b(customer|client|user)\\b",
+        "replacement": "member",
+        "auto_correct": true,
+        "rationale": "Credit union terminology: 'member' not 'customer'"
+      },
+      {
+        "pattern": "\\b(type|key in|input)\\b",
+        "replacement": "enter",
+        "auto_correct": true,
+        "rationale": "TFCU standard: 'enter' is preferred action verb"
+      },
+      {
+        "pattern": "\\b(page|window)\\b",
+        "replacement": "screen",
+        "auto_correct": true,
+        "context_exclude": ["popup", "dialog"],
+        "rationale": "TFCU standard: 'screen' unless referring to popups"
+      },
+      {
+        "pattern": "\\b(check|confirm|ensure)\\b",
+        "replacement": "verify",
+        "auto_correct": true,
+        "rationale": "TFCU standard: 'verify' is preferred verification verb"
+      }
+    ]
+  },
 
   "suggestion_categories": {
     "verification_steps": {
-      "description": "Suggest verification after data entry or critical actions",
+      "description": "AUTO-INSERT verification steps after data entry or critical actions",
+      "action": "auto_insert",
       "triggers": [
         {
           "pattern": "\\b(enter|input|type)\\b.*\\b(number|amount|date|name|address|account)\\b",
-          "suggestion_type": "add_step",
-          "message": "I noticed this is a data entry step. Best practice suggests adding a verification step afterward.",
+          "action": "auto_insert",
+          "marker": "[SUGGESTED: verify step]",
           "rationale": "Adult learning principle: Verification steps after data entry reduce errors by 40% and build muscle memory for accuracy.",
           "suggested_text": "Verify the {field} displays correctly before proceeding",
-          "priority": "medium"
+          "priority": "medium",
+          "enforce": true
         },
         {
           "pattern": "\\b(transfer|send|move|submit)\\b.*\\b(funds|money|payment|transaction)\\b",
-          "suggestion_type": "add_step",
-          "message": "This involves a financial transaction. Consider adding a verification step.",
+          "action": "auto_insert",
+          "marker": "[SUGGESTED: verify step]",
           "rationale": "Financial transactions are difficult to reverse. Verification prevents costly errors.",
           "suggested_text": "Verify the transaction details before confirming",
-          "priority": "high"
+          "priority": "high",
+          "enforce": true
         },
         {
           "pattern": "\\b(delete|remove|cancel|void)\\b",
-          "suggestion_type": "add_callout",
-          "message": "This is a destructive action. Consider adding a warning callout.",
+          "action": "auto_insert",
+          "marker": "[SUGGESTED: warning callout]",
           "rationale": "Destructive actions should be clearly marked to prevent accidental execution.",
           "callout_type": "warning",
           "suggested_text": "This action cannot be undone. Verify before proceeding.",
-          "priority": "high"
+          "priority": "high",
+          "enforce": true
         }
       ]
     },
@@ -45,7 +94,8 @@
             "show": "Username and password fields, login button",
             "focus": "Login button or credentials area",
             "annotations": ["Callout on username field", "Callout on password field", "Highlight login button"]
-          }
+          },
+          "placeholder_template": "**[Screenshot Needed]**\n\n*Show:* Username and password fields, login button\n*Focus:* Login button or credentials area\n*Suggested annotations:*\n• Callout on username field\n• Callout on password field\n• Highlight login button\n\n*Replace this cell with actual screenshot after capture.*"
         },
         {
           "pattern": "\\b(dropdown|drop-down|select.*from|choose.*from)\\b",
@@ -55,7 +105,8 @@
             "show": "Dropdown expanded with all options visible",
             "focus": "The correct option to select",
             "annotations": ["Highlight the dropdown", "Callout on correct selection"]
-          }
+          },
+          "placeholder_template": "**[Screenshot Needed]**\n\n*Show:* Dropdown expanded with all options visible\n*Focus:* The correct option to select\n*Suggested annotations:*\n• Highlight the dropdown\n• Callout on correct selection\n\n*Replace this cell with actual screenshot after capture.*"
         },
         {
           "pattern": "\\b(navigate|go to|open|access)\\b.*\\b(menu|screen|page|tab|section)\\b",
@@ -65,7 +116,8 @@
             "show": "Navigation menu or path to destination",
             "focus": "The menu item or link to click",
             "annotations": ["Arrow or highlight showing navigation path"]
-          }
+          },
+          "placeholder_template": "**[Screenshot Needed]**\n\n*Show:* Navigation menu or path to destination\n*Focus:* The menu item or link to click\n*Suggested annotations:*\n• Arrow or highlight showing navigation path\n\n*Replace this cell with actual screenshot after capture.*"
         },
         {
           "pattern": "\\b(error|warning|alert|message)\\b.*\\b(appears|displays|shows)\\b",
@@ -75,7 +127,8 @@
             "show": "The error message in its context",
             "focus": "Error text and any action buttons",
             "annotations": ["Highlight error message area"]
-          }
+          },
+          "placeholder_template": "**[Screenshot Needed]**\n\n*Show:* The error message in its context\n*Focus:* Error text and any action buttons\n*Suggested annotations:*\n• Highlight error message area\n\n*Replace this cell with actual screenshot after capture.*"
         },
         {
           "pattern": "\\b(form|application|request)\\b.*\\b(fill|complete|enter)\\b",
@@ -85,7 +138,8 @@
             "show": "Complete form with all fields visible",
             "focus": "Required fields and submit button",
             "annotations": ["Numbered callouts on each field in order"]
-          }
+          },
+          "placeholder_template": "**[Screenshot Needed]**\n\n*Show:* Complete form with all fields visible\n*Focus:* Required fields and submit button\n*Suggested annotations:*\n• Numbered callouts on each field in order\n\n*Replace this cell with actual screenshot after capture.*"
         },
         {
           "pattern": "\\b(confirmation|success|complete)\\b.*\\b(screen|message|dialog)\\b",
@@ -95,127 +149,159 @@
             "show": "Confirmation message and any reference numbers",
             "focus": "Success indicator",
             "annotations": ["Highlight confirmation message"]
-          }
+          },
+          "placeholder_template": "**[Screenshot Needed]**\n\n*Show:* Confirmation message and any reference numbers\n*Focus:* Success indicator\n*Suggested annotations:*\n• Highlight confirmation message\n\n*Replace this cell with actual screenshot after capture.*"
         }
       ]
     },
 
     "callout_suggestions": {
-      "description": "Suggest callout boxes based on content patterns",
+      "description": "AUTO-INSERT callout boxes based on content patterns - no prompting",
+      "action": "auto_insert",
       "triggers": [
         {
           "pattern": "\\$\\s*10,?000|\\bten thousand\\b|\\bctr\\b|\\bcurrency transaction\\b",
+          "action": "auto_insert",
           "callout_type": "critical",
           "icon": "⛔",
-          "message": "This amount triggers Currency Transaction Report (CTR) requirements.",
+          "marker": "[SUGGESTED: regulatory callout]",
           "suggested_text": "Transactions of $10,000 or more require CTR filing. Verify all documentation is complete.",
-          "category": "compliance"
+          "category": "compliance",
+          "enforce": true,
+          "regulatory": true
         },
         {
           "pattern": "\\b(suspicious|unusual|sar|structuring)\\b.*\\b(activity|transaction|pattern)\\b",
+          "action": "auto_insert",
           "callout_type": "critical",
           "icon": "⛔",
-          "message": "This triggers SAR consideration requirements.",
+          "marker": "[SUGGESTED: regulatory callout]",
           "suggested_text": "If suspicious activity is identified, follow SAR filing procedures. Do not alert the member.",
-          "category": "compliance"
+          "category": "compliance",
+          "enforce": true,
+          "regulatory": true
         },
         {
           "pattern": "\\b(never|do not|don't|cannot|must not|prohibited)\\b",
+          "action": "auto_insert",
           "callout_type": "critical",
           "icon": "⛔",
-          "message": "This contains a prohibition that staff must not violate.",
+          "marker": "[SUGGESTED: prohibition callout]",
           "suggested_text": null,
-          "category": "policy"
+          "category": "policy",
+          "enforce": true
         },
         {
           "pattern": "\\b(must|required|mandatory|always)\\b",
+          "action": "auto_insert",
           "callout_type": "warning",
           "icon": "⚠️",
-          "message": "This is a mandatory requirement.",
+          "marker": "[SUGGESTED: requirement callout]",
           "suggested_text": null,
-          "category": "policy"
+          "category": "policy",
+          "enforce": true
         },
         {
           "pattern": "\\b(deadline|by close|end of day|within \\d+|time.?sensitive)\\b",
+          "action": "auto_insert",
           "callout_type": "warning",
           "icon": "⚠️",
-          "message": "This has a time constraint that should be highlighted.",
+          "marker": "[SUGGESTED: time-sensitive callout]",
           "suggested_text": null,
-          "category": "operations"
+          "category": "operations",
+          "enforce": true
         },
         {
           "pattern": "\\b(irreversible|cannot be undone|permanent|final)\\b",
+          "action": "auto_insert",
           "callout_type": "warning",
           "icon": "⚠️",
-          "message": "This action has permanent consequences.",
+          "marker": "[SUGGESTED: irreversible action callout]",
           "suggested_text": "This action cannot be reversed. Verify all information before proceeding.",
-          "category": "operations"
+          "category": "operations",
+          "enforce": true
         },
         {
           "pattern": "\\b(tip|hint|best practice|pro tip|shortcut)\\b",
+          "action": "auto_insert",
           "callout_type": "tip",
           "icon": "✅",
-          "message": "This is a helpful tip worth highlighting.",
+          "marker": "[SUGGESTED: tip callout]",
           "suggested_text": null,
-          "category": "efficiency"
+          "category": "efficiency",
+          "enforce": true
         },
         {
           "pattern": "\\b(note|remember|keep in mind|fyi|for your information)\\b",
+          "action": "auto_insert",
           "callout_type": "info",
           "icon": "ℹ️",
-          "message": "This is informational content that may benefit from a callout.",
+          "marker": "[SUGGESTED: info callout]",
           "suggested_text": null,
-          "category": "general"
+          "category": "general",
+          "enforce": true
         },
         {
           "pattern": "\\b(example|for instance|such as|e\\.g\\.)\\b",
+          "action": "auto_insert",
           "callout_type": "info",
           "icon": "ℹ️",
-          "message": "Examples help clarify procedures. Consider formatting as an info callout.",
+          "marker": "[SUGGESTED: example callout]",
           "suggested_text": null,
-          "category": "learning"
+          "category": "learning",
+          "enforce": true
         }
       ]
     },
 
     "troubleshooting_entries": {
-      "description": "Suggest troubleshooting table entries",
+      "description": "AUTO-INSERT troubleshooting table entries - contact info triggers hard-stop",
+      "action": "auto_insert",
       "triggers": [
         {
           "pattern": "\\b(error|fail|issue|problem)\\b.*\\b(message|occurs|appears)\\b",
-          "message": "This describes an error condition. Should I add it to the troubleshooting table?",
+          "action": "auto_insert",
+          "marker": "[SUGGESTED: troubleshooting entry]",
           "entry_template": {
             "issue": "Error message appears during {step}",
-            "cause": "[Specify cause]",
-            "resolution": "[Specify resolution]"
-          }
+            "cause": "[SUGGESTED: specify cause]",
+            "resolution": "[SUGGESTED: specify resolution]"
+          },
+          "enforce": true
         },
         {
           "pattern": "\\b(contact|call|reach out)\\b.*\\b(support|help desk|IT|supervisor)\\b",
-          "message": "This mentions escalation. Should I document the escalation path in troubleshooting?",
+          "action": "auto_insert",
+          "marker": "[SME INPUT REQUIRED: support contact]",
           "entry_template": {
             "issue": "Unable to resolve issue",
             "cause": "Issue requires additional support",
-            "resolution": "Contact {support_contact}"
-          }
+            "resolution": "Contact [SME INPUT REQUIRED: current contact number]"
+          },
+          "enforce": true,
+          "hard_stop_for_contact": true
         },
         {
           "pattern": "\\b(try again|retry|restart|refresh)\\b",
-          "message": "This mentions a recovery action. Should I add recovery steps to troubleshooting?",
+          "action": "auto_insert",
+          "marker": "[SUGGESTED: troubleshooting entry]",
           "entry_template": {
             "issue": "{action} does not complete successfully",
             "cause": "Temporary system issue or timeout",
             "resolution": "Wait 30 seconds and retry. If issue persists, contact support."
-          }
+          },
+          "enforce": true
         },
         {
           "pattern": "\\b(if|when)\\b.*\\b(doesn't|does not|won't|will not|isn't|is not)\\b.*\\b(work|appear|show|display|respond)\\b",
-          "message": "This describes a potential failure scenario. Add to troubleshooting?",
+          "action": "auto_insert",
+          "marker": "[SUGGESTED: troubleshooting entry]",
           "entry_template": {
             "issue": "{element} does not {expected_behavior}",
-            "cause": "[Specify potential causes]",
-            "resolution": "[Specify resolution steps]"
-          }
+            "cause": "[SUGGESTED: specify potential causes]",
+            "resolution": "[SUGGESTED: specify resolution steps]"
+          },
+          "enforce": true
         }
       ]
     },
@@ -314,6 +400,355 @@
       "verification_steps": "Verification steps serve two purposes:\n1. They catch errors before they become problems\n2. They build habits that reduce future errors\n\nIn credit union operations, data entry errors can cause member frustration, compliance issues, or financial losses. A quick verification step takes seconds but prevents hours of correction work.",
       "screenshot_value": "Screenshots add value when:\n• The UI isn't intuitive from the description\n• Multiple similar options could cause confusion\n• New staff frequently ask about this step\n• Errors at this step are costly or common\n\nScreenshots may be skipped when the action is simple and the description is clear enough.",
       "callout_types": "TFCU uses four callout types:\n\n⛔ CRITICAL: Compliance requirements, security, must-do items\n⚠️ WARNING: Caution needed, potential for error, time-sensitive\nℹ️ INFO: Helpful context, additional information, notes\n✅ TIP: Best practices, efficiency suggestions, shortcuts"
+    }
+  },
+
+  "uncertainty_triggers": {
+    "description": "Patterns that indicate TFCU-specific content requiring user confirmation - model should NOT infer these values",
+
+    "tfcu_specific_content": {
+      "description": "Internal limits, fees, contacts that vary by institution",
+      "patterns": [
+        {
+          "id": "internal_dollar_limit",
+          "pattern": "\\$[\\d,]+(?:\\.\\d{2})?",
+          "exclude_if_matches": ["\\$10,?000.*(?:ctr|currency)", "(?:ctr|currency).*\\$10,?000"],
+          "context_patterns": ["limit", "threshold", "maximum", "minimum", "fee", "daily", "transaction"],
+          "action": "hard_stop",
+          "message": "Dollar amount detected that appears to be TFCU-specific. Please confirm the exact value.",
+          "marker_if_skipped": "SME_INPUT"
+        },
+        {
+          "id": "internal_fee",
+          "pattern": "\\b(fee|charge|cost)\\b.*\\$[\\d.]+",
+          "action": "hard_stop",
+          "message": "Fee amount detected. TFCU fees change - please confirm current amount.",
+          "marker_if_skipped": "VERIFY"
+        },
+        {
+          "id": "cutoff_time",
+          "pattern": "\\b(cutoff|cut-off|deadline)\\b.*\\b(\\d{1,2}:\\d{2}|\\d{1,2}\\s*(am|pm|AM|PM))\\b",
+          "action": "flag_for_verification",
+          "message": "Cutoff time detected. Please verify this is current.",
+          "marker_if_skipped": "VERIFY"
+        }
+      ]
+    },
+
+    "contact_references": {
+      "description": "Phone numbers, emails, and contact information - always TFCU-specific",
+      "patterns": [
+        {
+          "id": "phone_number",
+          "pattern": "\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}|1-?\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}",
+          "action": "flag_for_verification",
+          "message": "Phone number detected. Please verify this is the current contact number.",
+          "marker_if_skipped": "VERIFY"
+        },
+        {
+          "id": "extension",
+          "pattern": "ext\\.?\\s*\\d+",
+          "action": "flag_for_verification",
+          "message": "Extension detected. Extensions change frequently - please verify.",
+          "marker_if_skipped": "VERIFY"
+        },
+        {
+          "id": "email_address",
+          "pattern": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+          "action": "flag_for_verification",
+          "message": "Email address detected. Please verify this is current.",
+          "marker_if_skipped": "VERIFY"
+        },
+        {
+          "id": "specific_person",
+          "pattern": "\\b(contact|call|ask|email|see)\\s+([A-Z][a-z]+\\s+[A-Z][a-z]+)",
+          "action": "hard_stop",
+          "message": "Reference to a specific person detected. Procedures should use roles, not names (people change jobs). What role should this be?",
+          "marker_if_skipped": "SME_INPUT"
+        }
+      ]
+    },
+
+    "internal_policy_assertions": {
+      "description": "Must/required/never statements that are TFCU policy, not regulation",
+      "patterns": [
+        {
+          "id": "policy_must",
+          "pattern": "\\b(must|required|mandatory)\\b",
+          "exclude_if_matches": ["ctr", "sar", "bsa", "aml", "ofac", "reg\\s*[a-z]", "federal", "regulation"],
+          "action": "confirm_source",
+          "message": "This states a requirement. Is this from a specific TFCU policy, or a regulatory requirement?",
+          "marker_if_skipped": "CONFIRM"
+        },
+        {
+          "id": "policy_prohibition",
+          "pattern": "\\b(never|prohibited|forbidden|do not|don't)\\b",
+          "exclude_if_matches": ["ctr", "sar", "bsa", "aml", "ofac", "reg\\s*[a-z]", "federal", "regulation"],
+          "action": "confirm_source",
+          "message": "This states a prohibition. What is the source? (TFCU policy number or regulation)",
+          "marker_if_skipped": "CONFIRM"
+        }
+      ]
+    }
+  },
+
+  "hard_stop_patterns": {
+    "description": "Patterns that ALWAYS require user input - the model should NEVER infer these values",
+    "categories": [
+      {
+        "id": "tfcu_limits",
+        "description": "Internal transaction and approval limits",
+        "patterns": [
+          "daily.*limit",
+          "transaction.*limit",
+          "approval.*threshold",
+          "override.*limit",
+          "cash.*limit",
+          "wire.*limit"
+        ],
+        "action": "hard_stop",
+        "prompt": "I need the exact limit amount. TFCU limits vary by transaction type and may have changed. What is the current limit? $______"
+      },
+      {
+        "id": "tfcu_contacts",
+        "description": "Department contacts and support numbers",
+        "patterns": [
+          "contact.*department",
+          "call.*support",
+          "email.*team",
+          "supervisor.*on.*call",
+          "help.*desk"
+        ],
+        "action": "hard_stop",
+        "prompt": "I need the current contact information. Who should be contacted, and what is their current number/extension?"
+      },
+      {
+        "id": "tfcu_approval_authority",
+        "description": "Who can approve what",
+        "patterns": [
+          "requires.*approval",
+          "must.*be.*approved",
+          "authorization.*required",
+          "supervisor.*must",
+          "manager.*approval"
+        ],
+        "action": "hard_stop",
+        "prompt": "This requires approval. Which role(s) can approve, and up to what amount?"
+      },
+      {
+        "id": "tfcu_systems",
+        "description": "System URLs, paths, and access details",
+        "patterns": [
+          "login.*to",
+          "access.*system",
+          "navigate.*to",
+          "url.*is",
+          "system.*path"
+        ],
+        "action": "confirm_if_new",
+        "prompt": "This references a system. Please confirm the system name and access path are correct."
+      }
+    ]
+  },
+
+  "regulatory_passthrough": {
+    "description": "Content the model CAN confidently generate - federal/industry requirements that don't vary by institution",
+    "patterns": [
+      {
+        "id": "ctr_threshold",
+        "pattern": "\\$10,?000|ctr|currency transaction report",
+        "can_generate": true,
+        "confidence": 1.0,
+        "standard_callout": {
+          "type": "critical",
+          "text": "Cash transactions of $10,000 or more require Currency Transaction Report (CTR) filing. Complete all required documentation before processing."
+        },
+        "source": "31 CFR 1010.311 - Bank Secrecy Act"
+      },
+      {
+        "id": "sar_requirements",
+        "pattern": "sar|suspicious activity report",
+        "can_generate": true,
+        "confidence": 1.0,
+        "standard_callout": {
+          "type": "critical",
+          "text": "Suspicious Activity Reports (SARs) must be filed for suspicious transactions. Do not disclose SAR filing to the member."
+        },
+        "source": "31 CFR 1020.320 - FinCEN"
+      },
+      {
+        "id": "bsa_aml",
+        "pattern": "bsa|aml|bank secrecy act|anti-money laundering",
+        "can_generate": true,
+        "confidence": 1.0,
+        "source": "Bank Secrecy Act / AML regulations"
+      },
+      {
+        "id": "ofac_screening",
+        "pattern": "ofac|sanctions|sdn list",
+        "can_generate": true,
+        "confidence": 1.0,
+        "standard_callout": {
+          "type": "critical",
+          "text": "All transactions must be screened against OFAC sanctions lists as required by law."
+        },
+        "source": "OFAC requirements"
+      },
+      {
+        "id": "reg_e_timelines",
+        "pattern": "reg\\s*e|regulation\\s*e|error resolution|provisional credit",
+        "can_generate": true,
+        "confidence": 1.0,
+        "source": "12 CFR 1005 - Regulation E"
+      },
+      {
+        "id": "reg_d_limits",
+        "pattern": "reg\\s*d|regulation\\s*d|savings.*withdrawal.*limit",
+        "can_generate": true,
+        "confidence": 0.9,
+        "note": "Reg D limits were suspended in 2020; verify current status",
+        "source": "12 CFR 204 - Regulation D"
+      },
+      {
+        "id": "truth_in_savings",
+        "pattern": "truth in savings|reg\\s*dd|regulation\\s*dd|apy disclosure",
+        "can_generate": true,
+        "confidence": 1.0,
+        "source": "12 CFR 1030 - Regulation DD"
+      }
+    ]
+  },
+
+  "confidence_thresholds": {
+    "description": "Action thresholds based on pattern match confidence",
+    "levels": {
+      "auto_include": {
+        "threshold": 0.95,
+        "action": "Include without asking (regulatory requirements only)"
+      },
+      "suggest_and_confirm": {
+        "threshold": 0.70,
+        "action": "Suggest but ask user to confirm"
+      },
+      "flag_for_verification": {
+        "threshold": 0.50,
+        "action": "Include with [VERIFY] marker"
+      },
+      "require_user_input": {
+        "threshold": 0.30,
+        "action": "Hard stop - user must provide value"
+      },
+      "reject": {
+        "threshold": 0.0,
+        "action": "Do not include - too uncertain"
+      }
+    }
+  },
+
+  "pattern_precedence": {
+    "description": "When multiple patterns match the same text, apply in this order (first match wins)",
+    "evaluation_order": [
+      "regulatory_passthrough",
+      "hard_stop_patterns",
+      "uncertainty_triggers.tfcu_specific_content",
+      "uncertainty_triggers.contact_references",
+      "uncertainty_triggers.internal_policy_assertions",
+      "suggestion_categories.verification_steps",
+      "suggestion_categories.callout_suggestions",
+      "suggestion_categories.troubleshooting_entries",
+      "suggestion_categories.screenshot_recommendations",
+      "suggestion_categories.quick_reference_items",
+      "suggestion_categories.section_suggestions",
+      "suggestion_categories.institutional_knowledge",
+      "terminology_auto_correction"
+    ],
+    "conflict_resolution": {
+      "rule": "first_match_wins",
+      "exception": "regulatory_passthrough_overrides_hard_stop",
+      "rationale": "Federal regulations (CTR, SAR) have known values that override institution-specific hard-stops"
+    },
+    "examples": [
+      {
+        "text": "$10,000 daily limit",
+        "matches": ["regulatory_passthrough.ctr_threshold", "hard_stop_patterns.tfcu_limits"],
+        "winner": "regulatory_passthrough.ctr_threshold",
+        "reason": "CTR threshold is a known federal value"
+      },
+      {
+        "text": "$500 transaction limit",
+        "matches": ["hard_stop_patterns.tfcu_limits", "uncertainty_triggers.internal_dollar_limit"],
+        "winner": "hard_stop_patterns.tfcu_limits",
+        "reason": "Hard-stop takes precedence - user must confirm TFCU-specific limit"
+      }
+    ]
+  },
+
+  "false_positive_exclusions": {
+    "description": "Common patterns that trigger incorrectly - exclude from matching",
+    "exclusions": [
+      {
+        "pattern_category": "uncertainty_triggers.tfcu_specific_content.internal_dollar_limit",
+        "exclude_contexts": [
+          "\\$X+(\\.XX)?",
+          "\\$_+",
+          "example.*\\$",
+          "\\$.*example",
+          "illustration.*\\$",
+          "\\$\\d+\\s+per\\s+(year|month|annum)",
+          "sample.*\\$"
+        ],
+        "reason": "Placeholder amounts, examples, or recurring fees are not TFCU-specific limits"
+      },
+      {
+        "pattern_category": "uncertainty_triggers.contact_references.phone_number",
+        "exclude_contexts": [
+          "XXX-XXX-XXXX",
+          "\\(XXX\\)\\s*XXX-XXXX",
+          "1-800-XXX-XXXX",
+          "\\[phone\\s*number\\]",
+          "\\[call\\]",
+          "example\\s+phone",
+          "placeholder"
+        ],
+        "reason": "Placeholder patterns should not trigger verification prompts"
+      },
+      {
+        "pattern_category": "uncertainty_triggers.internal_policy_assertions.policy_must",
+        "exclude_contexts": [
+          "password\\s+must\\s+contain",
+          "must\\s+be\\s+at\\s+least\\s+\\d+\\s+(years|characters|digits)",
+          "field\\s+must\\s+match",
+          "must\\s+be\\s+unique",
+          "system\\s+requirement"
+        ],
+        "reason": "Technical system requirements are not policy assertions"
+      },
+      {
+        "pattern_category": "suggestion_categories.callout_suggestions",
+        "exclude_contexts": [
+          "table\\s+of\\s+contents",
+          "heading",
+          "title",
+          "section\\s+name"
+        ],
+        "reason": "Document structure elements should not trigger callout suggestions"
+      },
+      {
+        "pattern_category": "hard_stop_patterns.tfcu_systems",
+        "exclude_contexts": [
+          "\\[system\\s+name\\]",
+          "\\[URL\\]",
+          "\\[path\\]",
+          "example\\.com",
+          "placeholder"
+        ],
+        "reason": "Placeholder system references should not trigger hard-stops"
+      }
+    ],
+    "application_rules": {
+      "check_order": "Apply exclusions BEFORE pattern matching",
+      "case_sensitivity": "case_insensitive",
+      "match_type": "partial_match"
     }
   }
 }

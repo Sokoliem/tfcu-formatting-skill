@@ -1,8 +1,11 @@
 {
-  "version": "1.0",
-  "description": "Question templates and decision trees for the Interactive Procedure Wizard",
+  "version": "2.0",
+  "description": "Question templates and decision trees for the Interactive Procedure Wizard - v5.0+ with mandatory enforcement and auto-insert",
 
   "activation_triggers": [
+    "wizard",
+    "interactive",
+    "interactive mode",
     "create procedure",
     "new procedure",
     "write procedure",
@@ -106,6 +109,67 @@
           ]
         }
       ]
+    },
+
+    "quick_mode": {
+      "phase_number": 1.5,
+      "description": "Minimal questions for fast output - skips most prompts, applies defaults",
+      "estimated_minutes": "5-8",
+      "activation": "User selects 'quick' in intake phase mode selection",
+      "questions": [
+        {
+          "id": "quick_title",
+          "prompt": "What is the procedure name?",
+          "input_type": "text",
+          "validation": {
+            "min_length": 5,
+            "max_length": 100
+          }
+        },
+        {
+          "id": "quick_department",
+          "prompt": "Which department owns this?",
+          "input_type": "select",
+          "options": [
+            {"value": "Card_Services", "label": "Card Services"},
+            {"value": "Member_Services", "label": "Member Services"},
+            {"value": "Operations", "label": "Operations"},
+            {"value": "Lending", "label": "Lending"},
+            {"value": "Accounting", "label": "Accounting"},
+            {"value": "Compliance", "label": "Compliance"},
+            {"value": "IT", "label": "IT"},
+            {"value": "HR", "label": "HR"},
+            {"value": "Marketing", "label": "Marketing"}
+          ]
+        },
+        {
+          "id": "quick_content",
+          "prompt": "Paste the procedure content or describe the key steps:",
+          "input_type": "multiline_text",
+          "guidance": "Paste existing content to convert, or type a description of the steps"
+        }
+      ],
+      "defaults_applied": {
+        "procedure_type": "operational",
+        "audience": "frontline",
+        "screenshot_frequency": "medium",
+        "callout_emphasis": "auto_detect",
+        "detail_level": "high"
+      },
+      "skipped_phases": ["foundation", "step_construction"],
+      "proceeds_to": "quality_assurance",
+      "auto_processing": {
+        "description": "Claude automatically processes the pasted content",
+        "actions": [
+          "Apply terminology corrections (suggestion_triggers.json)",
+          "Scan for hard-stop patterns (TFCU-specific content)",
+          "Auto-insert verification steps and callouts",
+          "Generate screenshot placeholders where patterns match",
+          "Flag uncertainty items for Phase 3.5"
+        ],
+        "if_hard_stops_found": "Enter Phase 3.5 Uncertainty Resolution before QA",
+        "if_no_hard_stops": "Proceed directly to Phase 4 QA"
+      }
     },
 
     "foundation": {
@@ -228,30 +292,80 @@
       ]
     },
 
+    "section_validation": {
+      "phase_number": 4.5,
+      "description": "Validate document structure against spec-config.js - self-correcting",
+      "estimated_minutes": "automatic",
+      "checks": [
+        {"id": "header_table", "required": true, "description": "Row 1 dark teal, Row 2 light teal"},
+        {"id": "overview_section", "required": true, "description": "Max 3 sentences, starts with 'This procedure...'"},
+        {"id": "related_section", "required": true, "description": "Categorized links"},
+        {"id": "body_steps", "required": true, "description": "Two-column table for screenshot steps (55/45)"},
+        {"id": "revision_history", "required": true, "description": "On new page, 3-column table"},
+        {"id": "footer", "required": true, "description": "Department, procedure name, page number, version watermark"},
+        {"id": "table_of_contents", "conditional": true, "condition": "page_count > 3", "description": "Inline horizontal format"},
+        {"id": "quick_reference", "conditional": true, "condition": "has_critical_values", "description": "4-column teal format"},
+        {"id": "troubleshooting", "conditional": true, "condition": "has_error_patterns", "description": "3-column format"}
+      ],
+      "enforcement": "self_correcting",
+      "note": "Model applies spec-config.js values programmatically - no user intervention needed"
+    },
+
     "output": {
       "phase_number": 5,
       "estimated_minutes": "2-3",
+      "mandatory_bundle": true,
+      "description": "All outputs are MANDATORY - no prompting required",
       "deliverables": [
         {
           "id": "procedure_doc",
           "name": "Procedure Document",
           "format": "docx",
-          "includes": ["formatted_content", "screenshot_placeholders"]
+          "filename_pattern": "{Department}_{ProcedureName}_{YYYYMM}.docx",
+          "mandatory": true,
+          "includes": ["formatted_content", "screenshot_placeholders", "auto_inserted_verification_steps", "auto_inserted_callouts"]
         },
         {
-          "id": "screenshot_guide",
-          "name": "Screenshot Capture Guide",
-          "format": "markdown",
-          "includes": ["placeholder_list", "capture_instructions", "annotation_guidance"]
+          "id": "assessment",
+          "name": "Training Assessment",
+          "format": "docx",
+          "filename_pattern": "{ProcedureName}_Assessment_{YYYYMM}.docx",
+          "mandatory": true,
+          "includes": ["competency_questions", "answer_key", "scoring_guidance"]
         },
         {
-          "id": "terminology_report",
-          "name": "Terminology Report",
-          "format": "text",
-          "conditional": true,
-          "show_when": "violations_found"
+          "id": "quick_card",
+          "name": "Quick Reference Card",
+          "format": "docx",
+          "filename_pattern": "{ProcedureName}_QuickCard_{YYYYMM}.docx",
+          "mandatory": true,
+          "includes": ["key_steps", "callouts", "escalation_triggers", "contacts"]
+        },
+        {
+          "id": "validation_report",
+          "name": "Validation Report",
+          "format": "txt",
+          "filename_pattern": "{ProcedureName}_ValidationReport.txt",
+          "mandatory": true,
+          "includes": ["schema_compliance", "coverage_analysis", "terminology_corrections", "remaining_markers"]
         }
-      ]
+      ],
+      "filename_generation": {
+        "_spec_ref": "See validator/spec-config.js → filenameConventions for authoritative rules",
+        "enforce": true,
+        "validate_department": true,
+        "validate_procedure_name": true,
+        "auto_sanitize": true,
+        "show_preview_in_phase": 1,
+        "preview_template": "OUTPUT FILES (auto-generated)\n───────────────────────────────────────────────────────────────────────────\nBased on your inputs:\n  Department: {department}\n  Procedure: {procedure_name}\n\nYour files will be named:\n  📄 {procedure_filename}\n  📝 {assessment_filename}\n  🗂️ {quickcard_filename}\n  ✓  {report_filename}\n\n[These names are standardized automatically - no manual override needed]\n───────────────────────────────────────────────────────────────────────────",
+        "on_invalid_department": "prompt_selection",
+        "on_sanitized_name": "show_notification",
+        "functions": {
+          "generateFilename": "validated-helpers.js → generateFilename(type, department, procedureName, ctx)",
+          "generateOutputBundle": "validated-helpers.js → generateOutputBundle(department, procedureName, ctx)",
+          "getValidDepartments": "validated-helpers.js → getValidDepartments()"
+        }
+      }
     }
   },
 
@@ -323,12 +437,12 @@
       "format": "┌─────────────────────────────────────────────────────────────────┐\n│  📷 SCREENSHOT PLACEHOLDER — FIGURE {figure_number}                         │\n├─────────────────────────────────────────────────────────────────┤\n│  CAPTURE: {capture_description}                                 │\n│  SYSTEM:  {system_name}                                         │\n│  SHOW:    {visible_elements}                                    │\n│  FOCUS:   {annotation_target}                                   │\n│  SIZE:    {size_recommendation}                                 │\n│  ANNOTATIONS:                                                   │\n│    {annotation_suggestions}                                     │\n│  NOTES:   {additional_notes}                                    │\n└─────────────────────────────────────────────────────────────────┘"
     },
 
-    "decision_point": {
-      "format": "DECISION: {topic}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nOption A: {option_a_label}\n  ✓ {option_a_benefit_1}\n  ✓ {option_a_benefit_2}\n  ✗ {option_a_drawback}\n\nOption B: {option_b_label}\n  ✓ {option_b_benefit}\n  ✗ {option_b_drawback_1}\n  ✗ {option_b_drawback_2}\n\n📋 RECOMMENDATION: {recommendation}\n   {rationale}\n\n→ {option_a_label}\n→ {option_b_label}\n→ Tell me more"
+    "auto_insert_notification": {
+      "format": "✓ AUTO-INSERTED\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPattern detected: \"{pattern_type}\"\n\n✓ Auto-inserting: {insert_type}\n  \"{suggested_text}\"\n  {marker}\n\nThis will appear in the generated document with a marker.\nYou can accept, modify, or remove it during final review.\n\nRationale: {rationale}"
     },
 
-    "suggestion": {
-      "format": "💡 SUGGESTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nYou wrote: \"{user_input}\"\n\n{observation}\n\n{rationale}\n\nSuggested action:\n  \"{suggested_text}\"\n\n→ Accept suggestion\n→ Skip\n→ Tell me more"
+    "hard_stop_prompt": {
+      "format": "⛔ HARD STOP - USER INPUT REQUIRED\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n{reason}\n\nThis is TFCU-specific content that I cannot infer.\n\nPlease provide:\n{required_fields}\n\n(If you skip, I will insert [SME INPUT REQUIRED] markers.)"
     }
   },
 
@@ -358,6 +472,297 @@
         {"label": "CTR Threshold", "value": "$10,000"}
       ],
       "common_systems": ["Verafin", "GOLD"]
+    }
+  },
+
+  "uncertainty_prompts": {
+    "description": "Hard-stop question templates for TFCU-specific content that cannot be inferred",
+
+    "tfcu_dollar_limit": {
+      "trigger_patterns": ["\\$[\\d,]+(?:\\.\\d{2})?", "limit", "threshold", "maximum", "minimum", "fee"],
+      "exclude_patterns": ["\\$10,?000.*ctr", "\\$10,?000.*currency", "ctr.*\\$10,?000"],
+      "prompt": "I noticed a dollar amount or threshold that appears to be TFCU-specific.\n\nPlease confirm:\n1. What is the exact amount? $_______\n2. Is this a TFCU policy limit or a regulatory requirement?\n3. Where is this documented? (policy number or regulation)\n\n(TFCU internal limits vary - I cannot assume these values.)",
+      "required_fields": ["amount", "source_type", "documentation"],
+      "risk_level": "high"
+    },
+
+    "tfcu_approval_authority": {
+      "trigger_patterns": ["approv", "authoriz", "escalat", "supervisor", "manager", "override"],
+      "prompt": "This step involves approval authority.\n\nPlease specify:\n1. WHO can approve this? (title/role, not a specific person's name)\n2. What is the approval limit or scope?\n3. What is the backup if that person is unavailable?\n\n(Approval chains vary by transaction type and amount - I cannot assume.)",
+      "required_fields": ["authority_role", "scope", "backup_process"],
+      "risk_level": "high"
+    },
+
+    "tfcu_contact_information": {
+      "trigger_patterns": ["\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}", "1-?\\d{3}[-.\\s]?\\d{3}[-.\\s]?\\d{4}", "ext\\.?\\s*\\d+", "call", "contact", "phone", "email", "support", "help desk"],
+      "prompt": "You mentioned a contact reference.\n\nPlease provide current information:\n1. Exact phone number or extension: _______\n2. Department or role (not a specific person's name): _______\n3. Hours of availability (if applicable): _______\n\n(Contact information changes frequently - I need current, verified data.)",
+      "required_fields": ["contact_number", "department_role"],
+      "risk_level": "high"
+    },
+
+    "tfcu_policy_reference": {
+      "trigger_patterns": ["policy", "must", "required", "mandatory", "prohibited", "never", "always"],
+      "exclude_patterns": ["ctr", "sar", "bsa", "aml", "ofac", "reg\\s*[a-z]", "regulation"],
+      "prompt": "This states a TFCU policy requirement.\n\nPlease specify:\n1. Which TFCU policy document? _______\n2. Is this exact wording from the policy, or your interpretation?\n3. When was this policy last updated?\n\n(Policy citations must be accurate for audit purposes.)",
+      "required_fields": ["policy_name", "wording_verified"],
+      "risk_level": "high"
+    },
+
+    "tfcu_system_details": {
+      "trigger_patterns": ["login", "url", "http", "navigate to", "access", "system", "application"],
+      "prompt": "This references a system or application.\n\nPlease confirm:\n1. System/application name: _______\n2. Access URL or path (if applicable): _______\n3. Required permissions or access level: _______\n\n(System details must be verified to prevent access issues.)",
+      "required_fields": ["system_name", "access_path"],
+      "risk_level": "medium"
+    },
+
+    "quick_reference_value": {
+      "trigger_patterns": ["bin", "routing", "support.*number", "threshold", "cutoff"],
+      "prompt": "I detected a value that might go in Quick Reference.\n\nPlease confirm this is current:\n- Label: {detected_label}\n- Value: {detected_value}\n\nIs this accurate? [Yes / No / Update to: _______]",
+      "required_fields": ["confirmed"],
+      "risk_level": "medium"
+    },
+
+    "institutional_knowledge": {
+      "trigger_patterns": ["always", "never", "make sure", "don't forget", "remember", "because", "otherwise", "in my experience", "we've found", "workaround"],
+      "prompt": "This appears to be institutional knowledge (learned from experience):\n\n\"{extracted_text}\"\n\nPlease confirm:\n1. Is this still accurate guidance?\n2. Should this be formal policy or just a tip?\n3. Who can verify this is correct?\n\n(Experiential knowledge is valuable but should be verified.)",
+      "required_fields": ["still_accurate", "formality_level", "verifier"],
+      "risk_level": "medium"
+    }
+  },
+
+  "regulatory_passthrough": {
+    "description": "Content the model CAN generate without asking - these are federal/industry requirements, not TFCU-specific",
+    "patterns": [
+      {
+        "id": "ctr_threshold",
+        "pattern": "\\$10,?000|ctr|currency transaction report",
+        "can_generate": true,
+        "standard_text": "Cash transactions over $10,000 require Currency Transaction Report (CTR) filing.",
+        "source": "31 CFR 1010.311"
+      },
+      {
+        "id": "sar_filing",
+        "pattern": "sar|suspicious activity",
+        "can_generate": true,
+        "standard_text": "Suspicious activity must be reported per FinCEN requirements.",
+        "source": "31 CFR 1020.320"
+      },
+      {
+        "id": "bsa_aml",
+        "pattern": "bsa|aml|bank secrecy|anti-money launder",
+        "can_generate": true,
+        "standard_text": "Follow Bank Secrecy Act (BSA) and Anti-Money Laundering (AML) requirements.",
+        "source": "Bank Secrecy Act"
+      },
+      {
+        "id": "ofac_screening",
+        "pattern": "ofac|sanction",
+        "can_generate": true,
+        "standard_text": "Screen against OFAC sanctions list as required.",
+        "source": "OFAC SDN List requirements"
+      },
+      {
+        "id": "reg_e_timelines",
+        "pattern": "reg\\s*e|error resolution|provisional credit",
+        "can_generate": true,
+        "standard_text": "Follow Regulation E error resolution timelines.",
+        "source": "12 CFR 1005"
+      }
+    ]
+  },
+
+  "intervention_markers": {
+    "description": "Format definitions for markers that indicate human intervention is required",
+    "marker_types": {
+      "verify": {
+        "format": "[VERIFY: {content}]",
+        "style": {"color": "C00000", "italics": true, "font": "Calibri", "size_pt": 10},
+        "use_when": "Value was extracted by pattern matching but not confirmed by user"
+      },
+      "confirm": {
+        "format": "[CONFIRM: {content}]",
+        "style": {"color": "C00000", "italics": true, "font": "Calibri", "size_pt": 10},
+        "use_when": "Auto-generated content that needs user validation"
+      },
+      "sme_input": {
+        "format": "[SME INPUT REQUIRED: {content}]",
+        "style": {"color": "C00000", "italics": true, "font": "Calibri", "size_pt": 10},
+        "use_when": "Missing TFCU-specific information that cannot be inferred"
+      },
+      "missing": {
+        "format": "[MISSING: {content}]",
+        "style": {"color": "C00000", "italics": true, "font": "Calibri", "size_pt": 10},
+        "use_when": "Required field was not provided by user"
+      },
+      "check": {
+        "format": "[CHECK: {content}]",
+        "style": {"color": "C00000", "italics": true, "font": "Calibri", "size_pt": 10},
+        "use_when": "Inferred content with low confidence"
+      },
+      "suggested": {
+        "format": "[SUGGESTED: {content}]",
+        "style": {"color": "C00000", "italics": true, "font": "Calibri", "size_pt": 10},
+        "use_when": "Auto-generated content not from source procedure (e.g., quick card warnings)"
+      }
+    },
+    "output_summary": {
+      "show_marker_count": true,
+      "instruction": "Search for red italic text in the document to find all markers. All markers must be resolved before the procedure is approved."
+    }
+  },
+
+  "phase_transitions": {
+    "description": "Rules for moving between wizard phases, including validation and rollback",
+
+    "transitions": {
+      "intake_to_foundation": {
+        "from_phase": 1,
+        "to_phase": 2,
+        "required_fields": ["mode", "procedure_type", "audience", "department"],
+        "validation": "All required fields must be present",
+        "on_missing": "Prompt for missing fields before proceeding",
+        "transition_message": "Great, I have the basics. Now let's define the procedure itself."
+      },
+      "intake_to_quick_mode": {
+        "from_phase": 1,
+        "to_phase": 1.5,
+        "trigger": "mode == 'quick'",
+        "transition_message": "Quick mode selected! I'll ask just a few questions, then generate your output."
+      },
+      "quick_mode_to_uncertainty": {
+        "from_phase": 1.5,
+        "to_phase": 3.5,
+        "trigger": "hard_stops_found == true",
+        "transition_message": "I found some TFCU-specific content that needs verification before I can proceed."
+      },
+      "quick_mode_to_qa": {
+        "from_phase": 1.5,
+        "to_phase": 4,
+        "trigger": "hard_stops_found == false",
+        "transition_message": "Content processed. Running quality checks..."
+      },
+      "foundation_to_step_construction": {
+        "from_phase": 2,
+        "to_phase": 3,
+        "required_fields": ["title", "overview"],
+        "validation": "Title and overview must be valid",
+        "on_missing": "Prompt for missing fields",
+        "transition_message": "Foundation set. Let's build the steps."
+      },
+      "step_construction_to_uncertainty": {
+        "from_phase": 3,
+        "to_phase": 3.5,
+        "trigger": "flagged_items.length > 0",
+        "skip_if": "flagged_items.length == 0",
+        "skip_to": 4,
+        "transition_message": "Steps captured. Let's resolve some items that need your input."
+      },
+      "uncertainty_to_qa": {
+        "from_phase": 3.5,
+        "to_phase": 4,
+        "required": "All critical items resolved OR marked with intervention markers",
+        "on_unresolved": "Continue with markers - user will resolve post-generation",
+        "transition_message": "Items resolved. Running quality assurance checks..."
+      },
+      "qa_to_section_validation": {
+        "from_phase": 4,
+        "to_phase": 4.5,
+        "automatic": true,
+        "no_user_prompt": true,
+        "transition_message": "Validating document structure..."
+      },
+      "section_validation_to_output": {
+        "from_phase": 4.5,
+        "to_phase": 5,
+        "automatic": true,
+        "self_correcting": true,
+        "transition_message": "Structure validated. Generating your document bundle..."
+      }
+    },
+
+    "rollback_rules": {
+      "enabled": true,
+      "trigger_phrases": [
+        "go back",
+        "previous",
+        "back",
+        "redo",
+        "start over",
+        "restart",
+        "let me change",
+        "actually"
+      ],
+      "rollback_actions": {
+        "go_back_one": {
+          "trigger": ["go back", "previous", "back"],
+          "action": "Return to previous phase, preserve all entered data",
+          "prompt": "OK, going back to the previous step. Your previous answers are saved."
+        },
+        "redo_current": {
+          "trigger": ["redo", "let me change", "actually"],
+          "action": "Clear current phase responses, restart current phase",
+          "prompt": "No problem. Let's redo this section. What would you like to change?"
+        },
+        "start_over": {
+          "trigger": ["start over", "restart"],
+          "action": "Clear all data, return to Phase 1 intake",
+          "confirmation_prompt": "This will clear all your answers and start fresh. Are you sure? (yes/no)",
+          "on_confirm": "OK, starting over. What would you like to do?"
+        }
+      },
+      "preserved_on_rollback": [
+        "procedure_type",
+        "audience",
+        "department"
+      ],
+      "cleared_on_rollback": [
+        "current_phase_responses"
+      ]
+    },
+
+    "error_handling": {
+      "on_unexpected_input": {
+        "action": "clarify_and_retry",
+        "prompt": "I didn't quite understand that. Could you rephrase? Or would you like to:\n1. Continue with the current question\n2. Skip this question (use default)\n3. Go back to the previous step",
+        "max_retries": 3,
+        "after_max_retries": "I'm having trouble understanding. Let me try a simpler question..."
+      },
+      "on_validation_failure": {
+        "action": "explain_and_retry",
+        "prompt_template": "That doesn't quite meet the requirements: {validation_error}. Please try again.",
+        "max_retries": 3,
+        "after_max_retries": "I'll accept your answer and add a [CHECK] marker for review."
+      },
+      "on_skip_request": {
+        "trigger": ["skip", "not sure", "don't know", "idk", "pass"],
+        "response_by_field_type": {
+          "required": "This field is required for generation. If you're unsure, I can add a [MISSING] marker.",
+          "optional": "OK, skipping this. I'll use the default value.",
+          "has_default": "No problem, I'll use: {default_value}"
+        }
+      }
+    },
+
+    "session_commands": {
+      "description": "Commands users can invoke at any phase",
+      "commands": {
+        "help": {
+          "triggers": ["help", "?", "what do i do", "explain"],
+          "action": "Display context-sensitive help for current question"
+        },
+        "status": {
+          "triggers": ["status", "where am i", "progress"],
+          "action": "Show current phase, completed phases, and remaining phases"
+        },
+        "save": {
+          "triggers": ["save", "save progress", "pause"],
+          "action": "Acknowledge session state is preserved (auto-save)"
+        },
+        "summary": {
+          "triggers": ["summary", "what have i entered", "review answers"],
+          "action": "Display all answers entered so far"
+        }
+      }
     }
   }
 }

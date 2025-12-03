@@ -2,7 +2,766 @@
 
 ## Summary
 
-The TFCU Procedure Formatter skill provides professional document generation for credit union procedures. This changelog tracks all versions from the initial release through the current v4.6 release.
+The TFCU Procedure Formatter skill provides professional document generation for credit union procedures. This changelog tracks all versions from the initial release through the current v6.1.0 release.
+
+---
+
+## v6.1.0 - Execution Hardening & Self-Validation (Dec 2025)
+
+### Overview
+
+Added comprehensive safeguards to prevent common execution failures: stale dates, missing figure index, skipped annotation pipeline, and scattered critical rules. Introduced self-validation block that fails document generation if violations are detected.
+
+### Changes
+
+- **Dynamic Date Enforcement**:
+  - New `getCurrentDate()` helper returns "Month YYYY" format
+  - New `getCurrentDateYYYYMM()` helper returns "YYYYMM" for filenames
+  - All PROCEDURE config examples updated to use dynamic dates
+  - Validation rejects dates with year < current year
+  - Validation rejects hardcoded example date "December 2024"
+
+- **Self-Validation Block**:
+  - Pre-save validation that runs before document generation
+  - Exits with error code 1 if critical violations detected
+  - Checks: stale dates, missing Figure Index, unannotated raw images
+  - Clear error messages for each violation type
+
+- **MANDATORY PRE-FLIGHT Checklist**:
+  - New 6-step technical checklist at top of Quick Start
+  - Load spec-config.js, get current date, check screenshots
+  - Run annotation pipeline, verify figure_registry.json
+  - Plan Figure Index appendix inclusion
+
+- **HARD STOPS Section**:
+  - Consolidated critical rules in one prominent location
+  - Dynamic date generation (no hardcoded dates)
+  - Figure Index required when screenshots present
+  - Screenshot annotation pipeline required
+  - SME markers for TFCU-specific values
+
+- **spec-config.js Updates**:
+  - Added `conditionalRules.figureIndexRequired` (ST09)
+  - Added `conditionalRules.annotationPipelineRequired` (ST10)
+  - Added `dateValidation` configuration (ST11)
+
+### Files Modified
+
+- `SKILL.md` - Added PRE-FLIGHT checklist and HARD STOPS section
+- `REFERENCE.md` - Added getCurrentDate() helpers, self-validation block
+- `validator/spec-config.js` - Added conditional validation rules
+- `package.json` - Version bump to 6.1.0
+- `tests/VERIFICATION_TESTS.md` - Version bump to 6.1.0
+- `FILES.md` - Version bump to 6.1.0
+- `CHANGELOG.md` - Added v6.1.0 release notes
+
+---
+
+## v6.0.4 - Figure Index Appendix (Dec 2025)
+
+### Overview
+
+Added mandatory Figure Index appendix for procedures with screenshots. The Figure Index provides a complete reference of all figures in the document, listed in a table with titles, descriptions, sections, and step references.
+
+### Changes
+
+- **Figure Index Appendix (REQUIRED)**:
+  - New appendix page after main content, before Revision History
+  - Lists all screenshots in a 5-column table:
+    - Fig # (10%) - Figure number
+    - Title (20%) - Figure title
+    - Description (35%) - Brief description (truncated at 60 chars)
+    - Section (20%) - Which section the figure appears in
+    - Step (15%) - Step reference (e.g., "Step 3")
+  - Header uses standard teal styling
+  - Summary paragraph shows figure count
+  - Bookmark anchor for TOC linking (`figure-index`)
+  - Alternating row shading for readability
+
+- **spec-config.js Updates**:
+  - Added `tableWidths.figureIndex` with column width specs (TW12-TW16)
+  - Added `figureIndex` to `structure.requiredSections`
+
+- **validated-helpers.js Updates**:
+  - New `createFigureIndexAppendix(figures)` function
+  - Validates figure data and applies spec-config formatting
+  - Returns header, summary, and table configuration
+
+- **REFERENCE.md Updates**:
+  - Added Figure Index appendix to helper function mapping table
+  - Full `createFigureIndexAppendix()` implementation with usage example
+
+- **SKILL.md Updates**:
+  - Added Figure Index to Required Elements table
+  - Updated TOC format example to include Figure Index
+  - Updated validation checklist
+
+### Files Modified
+
+- `validator/spec-config.js` - Added Figure Index table widths and structure requirement
+- `validator/validated-helpers.js` - Added createFigureIndexAppendix function
+- `REFERENCE.md` - Added Figure Index documentation and implementation
+- `SKILL.md` - Updated requirements and validation checklist
+- `package.json` - Version bump to 6.0.4
+- `tests/VERIFICATION_TESTS.md` - Version bump to 6.0.4
+- `CHANGELOG.md` - Added v6.0.4 release notes
+
+---
+
+## v6.0.3 - Full-Feature Template Suite (Dec 2025)
+
+### Overview
+
+Added comprehensive reference templates for Assessment and Quick Card outputs, with embedded contextual help and examples of all capabilities.
+
+### Changes
+
+- **Assessment Template** (`assets/Assessment_Template.docx`):
+  - Portrait orientation with teal header
+  - Instructions section with employee info fields
+  - Section 1: Procedure Knowledge (7 example questions)
+    - Multiple choice (ordering, recall, navigation)
+    - True/False (from CRITICAL/WARNING callouts)
+    - Fill-in-blank
+  - Section 2: Scenario Applications (3 example questions)
+    - Scenario-based decision questions
+    - Application questions
+  - Intervention marker examples ([VERIFY], [SME INPUT REQUIRED])
+  - Answer Key on separate page with explanations
+  - Scoring section (80% pass threshold, remediation guidance)
+  - Disclaimers for various procedure types
+  - Embedded helper notes explaining each element
+
+- **Quick Card Template** (`assets/QuickCard_Template.docx`):
+  - Landscape orientation (8.5x11) for lamination
+  - Two-column layout
+  - Teal header bar with procedure name and department
+  - LEFT COLUMN:
+    - Before You Start (checkbox format, 4 items)
+    - Key Steps (numbered, 8 prioritized steps with weighting notes)
+  - RIGHT COLUMN:
+    - Watch Out For (critical/warning with severity icons)
+    - When to Escalate (condition → action pairs)
+    - Quick Contacts (label/value table with Consolas phone numbers)
+  - Intervention marker examples
+  - Auto-generated content examples with [SUGGESTED] markers
+  - Marker propagation notes
+  - Usage instructions
+  - Footer with department, date, version, disclaimer
+
+- **Template Generator Scripts** (in project root):
+  - `generate_assessment_template.js` - Regenerate assessment template
+  - `generate_quickcard_template.js` - Regenerate quick card template
+
+### Files Added
+
+- `assets/Assessment_Template.docx` - Comprehensive assessment template
+- `assets/QuickCard_Template.docx` - Comprehensive quick card template
+- `generate_assessment_template.js` - Assessment template generator
+- `generate_quickcard_template.js` - Quick card template generator
+
+### Files Modified
+
+- `FILES.md` - Updated file inventory (41 files total)
+- `CHANGELOG.md` - Added v6.0.3 release notes
+
+---
+
+## v6.0.2 - Comprehensive Template Replacement (Dec 2025)
+
+### Problem Addressed
+
+The embedded reference template (`assets/Procedure_Template.docx`) was outdated (v4.x era) and conflicting with current skill specifications. Issues included:
+- Wrong header colors (primary teal in row 2 instead of light teal)
+- Double borders on header table
+- Wrong font sizes
+- No inline TOC format demonstration
+- Missing modern features (callout types, intervention markers, screenshot placeholders)
+
+### Changes
+
+- **Replaced embedded template** with comprehensive full-feature demonstration:
+  - Correct 2-row header table layout (#154747 row 1, #E8F4F4 row 2)
+  - Inline horizontal TOC format (`Contents: Section1 • Section2 • Section3`)
+  - All 4 callout types (CRITICAL, WARNING, NOTE, TIP) with correct colors
+  - All 6 intervention marker types ([SME INPUT REQUIRED], [VERIFY], [SUGGESTED], etc.)
+  - Quick Reference box (4-column teal grid)
+  - Screenshot placeholder with 55%/45% layout
+  - Step with screenshot layout demonstration
+  - Troubleshooting table (Issue/Cause/Resolution)
+  - Glossary table (Term/Definition)
+  - Revision History table with correct formatting
+  - Footer with page numbers and version watermark
+
+- **Added template generator script**: `generate_template.js`
+  - Produces consistent, reproducible templates
+  - Documents all skill capabilities through working code
+  - Can regenerate template if specifications change
+
+### Files Modified
+
+- `assets/Procedure_Template.docx` - Replaced with comprehensive demonstration template
+- `CHANGELOG.md` - Added v6.0.2 release notes
+
+### Files Added
+
+- `generate_template.js` - Template generation script (can be run with `node generate_template.js`)
+
+---
+
+## v6.0.1 - TOC Format Enforcement Hotfix (Dec 2025)
+
+### Problem Addressed
+
+Generated documents were using incorrect Table of Contents format (table-based vertical list) instead of the required inline horizontal paragraph format.
+
+### Changes
+
+- **Added "Critical Formatting Rules" section** to SKILL.md (before Quick Start)
+  - Visual diagram of correct header table layout
+  - Explicit TOC format requirements with forbidden patterns
+  - Reference to required helper functions
+
+- **Strengthened TOC format documentation**:
+  - Added visual examples of FORBIDDEN formats (table-based, vertical list)
+  - Added "CRITICAL" callout boxes in SKILL.md, REFERENCE.md, visual_elements.md
+  - Added anti-pattern warnings in createTableOfContents() function
+
+- **Updated REFERENCE.md createTableOfContents()**:
+  - Added prominent anti-pattern warning block
+  - Added inline comments emphasizing PARAGRAPH (not Table) return type
+
+### Files Modified
+
+- `SKILL.md` - Added Critical Formatting Rules section, expanded TOC format guidance
+- `REFERENCE.md` - Added anti-pattern warnings to createTableOfContents()
+- `resources/visual_elements.md` - Added CRITICAL FORMAT RULE callout for TOC
+
+---
+
+## v6.0 - Production Readiness Release (Dec 2025)
+
+### Overview
+
+This release focuses on documentation completeness, cross-file validation, and production readiness. No new features - all changes improve consistency, discoverability, and maintainability.
+
+### Changes
+
+- **Comprehensive FILES.md Inventory**:
+  - Created complete file inventory documenting all 38 skill files
+  - Status indicators for each file (complete, needs review)
+  - Grouped by directory (validator, resources, scripts, templates, assets)
+
+- **tests/VERIFICATION_TESTS.md Test Plan**:
+  - Created manual verification test plan with 6 test scenarios
+  - Mode detection tests (convert, create, template, quick card, assessment)
+  - Pre-generation scanning tests (6 flag item scenarios)
+  - Helper selection and callout selection decision matrices
+  - Post-generation validation checklist
+  - Full bundle generation verification
+
+- **Documentation of Orphaned Resources**:
+  - Added 4 resource files to SKILL.md Files Reference section:
+    - `resources/screenshot_handling.md` - Screenshot processing guidelines
+    - `resources/vision_prompts.md` - Vision/image analysis prompts
+    - `resources/writing_standards.md` - TFCU writing style guidelines
+    - `resources/terminology_rules.json` - Terminology validation rules
+
+- **Documentation of Undocumented Scripts**:
+  - Added 4 Python scripts to SKILL.md Files Reference section:
+    - `scripts/revision_analyzer.py` - Revision history analysis
+    - `scripts/report_generator.py` - HTML report generation
+    - `scripts/terminology_validator.py` - Cross-procedure terminology validation
+    - `scripts/text_color_parser.py` - DOCX text color extraction
+
+- **Version Synchronization Fix**:
+  - Fixed visual_elements.md version (was v4.8, now v6.0)
+  - Added mirror comments to duplicate constants in REFERENCE.md and visual_elements.md
+  - All version references now consistent across SKILL.md, REFERENCE.md, visual_elements.md
+
+### Files Modified
+
+- `SKILL.md` - Version bump to v6.0, expanded Files Reference section
+- `REFERENCE.md` - Version bump to v6.0, added mirror comments
+- `resources/visual_elements.md` - Version bump v4.8 → v6.0, added mirror comments
+- `CHANGELOG.md` - Added v6.0 release notes
+
+### Files Created
+
+- `FILES.md` - Complete file inventory
+- `tests/VERIFICATION_TESTS.md` - Manual verification test plan
+
+### Acceptance Criteria
+
+- [ ] Version "v6.0" consistent in SKILL.md, REFERENCE.md, visual_elements.md
+- [ ] All 38 files documented in FILES.md with status indicators
+- [ ] VERIFICATION_TESTS.md contains 6 test scenarios
+- [ ] 8 previously undocumented files added to SKILL.md Files Reference
+- [ ] No broken file references remain in SKILL.md
+
+---
+
+## v5.3 - Anti-Hallucination Workflow Integration (Dec 2025)
+
+### Problem Addressed
+
+Anti-hallucination requirements were documented in SKILL.md but physically separated from the Quick Start workflow. This made it easy to bypass safeguards during actual document processing, resulting in:
+- Fabricated contact information (e.g., invented phone extensions)
+- Inferred policy/procedure/form names not present in source documents
+
+### Changes
+
+- **New Step 0 in Quick Start Workflow**:
+  - Added mandatory "ANTI-HALLUCINATION SCAN" as Step 0 before all other steps
+  - Requires scanning source document for 5 categories of TFCU-specific values:
+    - Contact info (phone, ext, email)
+    - Policy/procedure/form names
+    - Dollar amounts (non-regulatory)
+    - System URLs/paths
+    - Approval authorities
+  - Explicit "DO NOT PROCEED" instruction until scan is complete
+  - Renumbered existing steps 0-7 → 1-8
+
+- **Pre-Generation Checklist (HARD STOP)**:
+  - Added checkbox-format scannable checklist after Quick Start section
+  - 5 verification items with clear completion criteria
+  - Two-option resolution: Ask user OR insert `[SME INPUT REQUIRED]` markers
+  - Bold warning: "DO NOT invent, infer, or assume TFCU-specific values"
+
+- **Marker Summary Requirement**:
+  - Added to "Mandatory Output Bundle" section
+  - Output message MUST list all `[SME INPUT REQUIRED]` markers
+  - Ensures unresolved items are visible even without full document review
+
+- **New `createSMEMarker()` Helper Function** (REFERENCE.md):
+  - Convenience function for the most common marker type
+  - Bold, red (#C00000), italic, yellow highlight styling
+  - Three practical usage examples included
+
+### Files Modified
+
+- `SKILL.md` - Added Step 0, Pre-Generation Checklist, marker summary requirement
+- `REFERENCE.md` - Added `createSMEMarker()` helper function with examples
+
+### Acceptance Criteria
+
+- Quick Start workflow explicitly includes anti-hallucination scan as Step 0
+- Pre-generation checklist is visually prominent and uses checkbox format
+- Marker summary requirement documented in output bundle section
+- `createSMEMarker()` helper exists in REFERENCE.md
+- Original safeguard rules remain unchanged (just better integrated into workflow)
+
+---
+
+## v5.2 - Standardized Filename Enforcement (Dec 2025)
+
+### Major Changes
+
+- **Filename Convention Enforcement (MANDATORY)**:
+  - All output filenames now generated programmatically via `generateFilename()` and `generateOutputBundle()`
+  - No manual filename override possible - enforced by design
+  - Department validation with auto-correction from aliases
+  - Procedure name sanitization (spaces→underscores, special chars removed, title case)
+  - Date suffix always uses current YYYYMM from system date
+
+- **New spec-config.js Section**:
+  - Added `filenameConventions` section (FN01-FN08)
+  - 9 approved departments with alias mapping
+  - Filename patterns for all 4 output files
+  - Procedure name rules (max length, allowed chars, title case)
+
+- **New Validation Infrastructure**:
+  - `FilenameValidationError` class in validation-errors.js
+  - Static methods: `invalidDepartment()`, `procedureNameSanitized()`, `departmentCorrected()`
+  - Integrated with ValidationContext for reporting
+
+- **New Helper Functions** in validated-helpers.js:
+  - `generateFilename(type, department, procedureName, ctx)` - Single file
+  - `generateOutputBundle(department, procedureName, ctx)` - All 4 files
+  - `sanitizeDepartment(dept, ctx)` - Department validation with auto-correction
+  - `sanitizeProcedureName(name, ctx)` - Name sanitization
+  - `getCurrentDateYYYYMM()` - System date in YYYYMM format
+  - `getValidDepartments()` - Get approved department list
+
+- **Wizard Enhancement**:
+  - Filename preview shown in Phase 1 after collecting department/title
+  - Invalid department triggers selection prompt
+  - Sanitized procedure name shows notification
+
+### Files Modified
+
+- `validator/spec-config.js` - Added `filenameConventions` section
+- `validator/validation-errors.js` - Added `FilenameValidationError` class
+- `validator/validated-helpers.js` - Added 6 filename functions
+- `resources/wizard_prompts.json` - Added `filename_generation` config
+- `resources/interactive_wizard.md` - Added filename preview section to Phase 1
+- `SKILL.md` - Updated to v5.2, added "(MANDATORY - Auto-Enforced)" to filename section
+
+### Department Aliases
+
+The following aliases are auto-corrected:
+- `card services`, `cardservices`, `cards` → `Card_Services`
+- `member services`, `memberservices`, `members` → `Member_Services`
+- `ops`, `operation` → `Operations`
+- `loans`, `loan` → `Lending`
+- `finance`, `acct` → `Accounting`
+- `it`, `tech`, `technology` → `IT`
+- `hr`, `human resources` → `HR`
+- `mktg` → `Marketing`
+
+---
+
+## v5.1 - Mandatory Feature Enforcement & Schema Validation (Dec 2025)
+
+### Major Changes
+
+- **All Optional Features Now Mandatory**: No more prompting - features execute automatically
+  - Training Assessment Generator: Always generates `{ProcedureName}_Assessment_{YYYYMM}.docx`
+  - Quick Reference Card Generator: Always generates `{ProcedureName}_QuickCard_{YYYYMM}.docx`
+  - Validation Report: Always generates `{ProcedureName}_ValidationReport.txt`
+  - Every procedure now produces a **4-file output bundle**
+
+- **Auto-Insert with [SUGGESTED] Markers**: Non-blocking auto-population
+  - Verification steps auto-inserted after data entry/transaction patterns
+  - Callouts auto-inserted for all detected patterns (CRITICAL, WARNING, TIP, INFO)
+  - Troubleshooting entries auto-inserted for error patterns
+  - Documents generate with markers - user reviews post-output
+
+- **Two-Tier Enforcement**:
+  - **HARD-STOP (requires user input)**: TFCU-specific content only (amounts, contacts, authorities, policies, URLs)
+  - **AUTO-INSERT (proceeds with markers)**: All other content
+
+- **Self-Correcting Schema Validation**:
+  - Model applies spec-config.js values programmatically during generation
+  - Terminology auto-correction (click→select, customer→member, etc.)
+  - Coverage analysis with soft warnings (not blocking)
+  - Validation report includes schema compliance, coverage %, corrections, remaining markers
+
+- **Enhanced Intervention Marker Styling**:
+  - All flags (`[SME INPUT REQUIRED]`, `[VERIFY]`, `[SUGGESTED]`, etc.) now display as:
+    - **Bold** + **Red** (#C00000) + **Italic** + **Yellow highlight**
+  - Maximum visibility for human review requirements
+  - Updated INTERVENTION_MARKER_STYLE in all documentation
+
+- **New Validated Helpers**: Extended `validator/validated-helpers.js` with:
+  - `createTableOfContents()` - Inline horizontal format enforcement
+  - `createStepWithScreenshot()` - 55/45 column width enforcement
+  - `createQuickReferenceBox()` - 4-column teal format enforcement
+  - `createTroubleshootingTable()` - 25/30/45 column width enforcement
+  - `createValidationReport()` - Generates validation report text
+
+- **Added Phase 4.5 (Section Validation)**: Validates document structure before output
+
+- **Cross-Document Formatting Consistency**:
+  - Added `crossDocumentFormatting` section to `spec-config.js`
+  - All output documents (procedure, assessment, quick card, validation report) share:
+    - Same fonts (Calibri primary, Consolas monospace)
+    - Same brand colors (teal headers, white header text, black body, gray footer)
+    - Same intervention marker styling (bold, red, italic, yellow highlight)
+  - Document-specific overrides for orientation, margins, font sizes
+  - Added layout sections to `assessment_prompts.json` and updated `quick_card_prompts.json`
+
+- **Screenshot Callout Color Matching (MANDATORY)**:
+  - Added `screenshotCallouts` section to `spec-config.js`
+  - Text references like "(Callout 1)" MUST match the annotation color on screenshots
+  - Default callout color: teal (#154747) to match TFCU branding
+  - Available colors: teal, red, blue, green, gold
+  - Documented in `resources/visual_elements.md` with implementation examples
+
+### Files Modified
+
+- `SKILL.md` - v5.1, mandatory output bundle, validation infrastructure section, 7 wizard phases
+- `REFERENCE.md` - v5.1, imports validated-helpers with ValidationContext
+- `resources/interactive_wizard.md` - Phase 4.5, coverage analysis, auto-insert rules, mandatory bundle
+- `resources/suggestion_triggers.json` - v2.0 with auto_insert actions, terminology auto-correction
+- `resources/wizard_prompts.json` - v2.0 with Phase 4.5, mandatory deliverables
+- `resources/quick_card_generator.md` - Marked as MANDATORY
+- `resources/assessment_generator.md` - Marked as MANDATORY
+- `validator/validated-helpers.js` - Added 5 new validators + createValidationReport
+
+### Configuration Updates
+
+- `suggestion_triggers.json`:
+  - Added `terminology_auto_correction` section with 5 auto-correct rules
+  - Added `auto_insert_config` section
+  - All triggers now have `action: "auto_insert"` and `enforce: true`
+
+- `wizard_prompts.json`:
+  - Added `section_validation` phase (4.5)
+  - Updated `output` phase with `mandatory_bundle: true` and 4 deliverables
+
+---
+
+## v5.0.1 - Anti-Hallucination Enforcement (Dec 2025)
+
+### Changes
+
+- **Added MANDATORY enforcement language** to ensure anti-hallucination checks are automatically applied
+  - Updated SKILL.md frontmatter with CRITICAL enforcement note
+  - Added "CRITICAL: Anti-Hallucination Requirements" section to SKILL.md (prominent position)
+  - Added "MANDATORY: Anti-Hallucination Enforcement" section to interactive_wizard.md
+  - Enforcement rules now explicitly state the model MUST scan for patterns and ASK before proceeding
+
+- **Clarified enforcement workflow**:
+  1. Model MUST scan all user input against `uncertainty_triggers` patterns
+  2. Model MUST hard-stop on TFCU-specific content and ASK for values
+  3. Model MUST insert markers if user skips providing required values
+  4. Model MUST NOT infer or guess TFCU-specific values under any circumstances
+
+### Files Modified
+
+- `SKILL.md` - Added CRITICAL enforcement section, updated frontmatter
+- `resources/interactive_wizard.md` - Added MANDATORY enforcement section at top
+
+---
+
+## v5.0 - Anti-Hallucination Safeguards (Dec 2025)
+
+### New Features
+
+- **Anti-Hallucination Safeguards**: Prevents the model from fabricating TFCU-specific content
+  - Distinguishes between regulatory requirements (model CAN generate) and TFCU-specific content (model MUST ask)
+  - Hard-stop questioning for critical items: internal limits, approval authorities, contacts
+  - Red italic intervention markers in generated DOCX for unverified content
+
+- **New Phase 3.5: Uncertainty Resolution**: Added to wizard workflow
+  - Presents all flagged uncertainties after step construction
+  - Separates CRITICAL (must resolve) from VERIFICATION (can flag)
+  - User chooses: resolve all, resolve critical only, or proceed with markers
+
+- **Intervention Markers**: Six marker types for different uncertainty levels:
+  | Marker | When Used |
+  |--------|-----------|
+  | `[VERIFY: ...]` | Pattern-extracted value needs confirmation |
+  | `[CONFIRM: ...]` | Auto-generated content needs validation |
+  | `[SME INPUT REQUIRED: ...]` | Missing TFCU-specific information |
+  | `[MISSING: ...]` | Required field not provided |
+  | `[CHECK: ...]` | Inferred content with low confidence |
+  | `[SUGGESTED: ...]` | Auto-generated content not from source |
+
+- **Regulatory Passthrough**: Model confidently generates these without asking:
+  - CTR threshold ($10,000) - 31 CFR 1010.311
+  - SAR requirements - FinCEN rules
+  - BSA/AML procedures - Bank Secrecy Act
+  - OFAC screening - Federal sanctions
+  - Reg E timelines - Error resolution
+
+- **Assessment Distractor Verification**: Prevents auto-generating wrong answers for compliance content
+
+- **Quick Card Marker Propagation**: Markers from source procedure propagate to extracted card content
+
+### Files Modified
+
+- `SKILL.md` - Updated to v5.0, added "Anti-Hallucination Safeguards" section
+- `REFERENCE.md` - Updated to v5.0, added Intervention Marker Helpers section:
+  - `createInterventionMarker()` - Red italic marker TextRun
+  - `createTextWithMarker()` - Paragraph with inline marker
+  - `createMarkerSummary()` - Summary table for output section
+- `resources/wizard_prompts.json` - Added:
+  - `uncertainty_prompts` - Hard-stop question templates for TFCU-specific content
+  - `regulatory_passthrough` - Patterns model CAN generate
+  - `intervention_markers` - Marker format definitions
+- `resources/suggestion_triggers.json` - Added:
+  - `uncertainty_triggers` - Patterns requiring user confirmation
+  - `hard_stop_patterns` - Patterns that ALWAYS require input
+  - `regulatory_passthrough` - Federal requirements the model can generate
+  - `confidence_thresholds` - Action thresholds by confidence level
+- `resources/interactive_wizard.md` - Added:
+  - Phase 3.5: Uncertainty Resolution
+  - Marker summary in Phase 5 output
+  - Quick Card marker integration
+- `resources/visual_elements.md` - Added Intervention Markers section with styling specs
+- `resources/assessment_prompts.json` - Added:
+  - `distractor_verification` - Safeguards for wrong answer generation
+  - `question_generation_rules` - Which questions can be auto-generated
+  - `content_with_markers` - How to handle flagged content in assessments
+- `resources/quick_card_prompts.json` - Added:
+  - `marker_propagation` - Preserve markers in extracted content
+
+---
+
+## v4.9 - Quick Reference Card Generator (Dec 2025)
+
+### New Features
+
+- **Quick Reference Card Generator**: Creates one-page "cheat sheets" from full procedures for frontline staff
+  - Automatically offered at end of wizard Phase 5 (after assessment offer)
+  - Landscape orientation (8.5x11), two-column layout, laminatable format
+  - Smart content extraction prioritizing decision points and critical steps
+  - TFCU branded with teal header and professional styling
+
+- **Card triggers**: "quick reference", "cheat sheet", "job aid", "quick card", "reference card", "one pager", "desk reference"
+
+- **Card sections automatically generated**:
+  | Section | Content Source | Max Items |
+  |---------|----------------|-----------|
+  | Before You Start | Prerequisites | 4 |
+  | Key Steps | Top prioritized steps | 8 |
+  | Watch Out For | CRITICAL/WARNING callouts | 4 |
+  | When to Escalate | Escalation triggers | 3 |
+  | Quick Contacts | Support numbers, supervisors | 4 |
+
+- **Smart extraction algorithm** (step prioritization):
+  | Weight | Criteria | What It Catches |
+  |--------|----------|-----------------|
+  | 30% | Decision points | if/when logic, selection choices |
+  | 25% | Verification steps | verify/confirm/check/ensure |
+  | 20% | Section anchors | First and last steps of each section |
+  | 15% | Callout-attached | Steps with WARNING/CRITICAL callouts |
+  | 10% | Data entry | enter/type/input steps |
+
+- **Edge case handling**: Short procedures, missing callouts, no contacts, large procedures (>25 steps)
+
+- **Abbreviation glossary**: Auto-applies common abbreviations (MSR, Acct #, CTR, SAR, etc.)
+
+### Files Added
+
+- `resources/quick_card_generator.md` - Complete feature documentation with user interaction flows
+- `resources/quick_card_prompts.json` - Extraction rules, triggers, layout config, edge case handling
+
+### Files Modified
+
+- `SKILL.md` - Added triggers to frontmatter, new "Quick Reference Card Generator" section, updated Files Reference
+- `REFERENCE.md` - Added 8 new helper functions for landscape card layout:
+  - `createQuickCardHeader()` - Teal branded header bar
+  - `createQuickCardSectionHeader()` - Section headers with icons
+  - `createCheckboxList()` - Before You Start items
+  - `createCondensedSteps()` - Key Steps numbered list
+  - `createCalloutList()` - Watch Out For with icons
+  - `createEscalationList()` - When to Escalate condition/action pairs
+  - `createQuickContactGrid()` - Contact label/value table
+  - `createLandscapeQuickCard()` - Complete card document assembly
+- `resources/interactive_wizard.md` - Added Phase 5 extension for quick card auto-offer
+
+### Documentation
+
+- Updated version numbers to v4.9 across all files
+- Added Quick Card Helpers section to REFERENCE.md Table of Contents
+- Added edge case handling dialogs to interactive_wizard.md
+
+---
+
+## v4.8 - Training Assessment Generator (Dec 2025)
+
+### New Features
+
+- **Training Assessment Generator**: Transforms completed procedures into competency assessments
+  - Automatically offered at end of wizard Phase 5
+  - Generates 5-10 questions from procedure content
+  - Question types: multiple choice, true/false, fill-in-blank, scenario-based
+  - Answer key on separate page (for supervisor use)
+  - 80% pass threshold with remediation guidance
+  - Output as appended section or standalone document
+
+- **Assessment triggers**: "generate assessment", "create quiz", "training questions", "competency check"
+
+- **Question generation logic based on procedure elements**:
+  - Sequential steps → ordering questions (60% recall)
+  - CRITICAL/WARNING callouts → true/false questions
+  - Decision points → scenario questions (10% scenario)
+  - Quick Reference values → recall questions
+  - Data entry with verification → fill-in-blank questions (30% application)
+
+### Files Added
+
+- `resources/assessment_generator.md` - Assessment generation rules, templates, and examples
+- `resources/assessment_prompts.json` - Question templates, triggers, difficulty weights, scoring config
+
+### Documentation
+
+- Added "Training Assessment Generator" section to SKILL.md
+- Added "Phase 5 Extension: Training Assessment Generator" to interactive_wizard.md
+- Added "Assessment Section Helpers" with 6 helper functions to REFERENCE.md
+
+---
+
+## v4.7.3 - Footer Layout Fix (Dec 2025)
+
+### Bug Fixes
+
+- **Balanced footer layout**: Fixed version watermark pushing footer content off-center
+  - Old: `Dept | Procedure | Page X of Y                    v4.7.2` (unbalanced)
+  - New: `Dept | Procedure | Page X of Y  ·  v4.7.3` (centered, inline)
+  - Version now uses middle-dot separator (·) and lighter gray (#AAAAAA)
+  - Footer remains fully centered with version as natural suffix
+
+---
+
+## v4.7.2 - Date Verification & Version Watermark (Dec 2025)
+
+### New Features
+
+- **Date verification requirement**: Skill now explicitly instructs Claude to verify the current date before generating documents
+  - Prevents date assumptions based on training data cutoffs
+  - Applies to header table date, revision history, and filename convention
+
+- **Version watermark in footer**: Generated documents now include subtle skill version in footer
+  - Format: `Department | Procedure Name | Page X of Y          v4.7.2`
+  - Version appears right-aligned in small gray text (#999999)
+  - Enables traceability of which skill version generated each document
+
+### Documentation
+
+- Added "Date Handling" section to SKILL.md Workflow Execution
+- Added `SKILL_VERSION` constant to REFERENCE.md Layout Constants
+- Updated footer implementation in REFERENCE.md and visual_elements.md
+
+---
+
+## v4.7.1 - Output Format Enforcement (Dec 2025)
+
+### Bug Fixes
+
+- **Screenshot format enforcement**: Added explicit "MANDATORY" section requiring two-column table format for screenshot steps
+  - Skill was generating inline `[SCREENSHOT: description]` text instead of tables
+  - Now clearly prohibits inline format and mandates table layout
+
+- **TOC format enforcement**: Added explicit format requirements for Table of Contents
+  - Must be inline horizontal: `Contents: Section1 • Section2 • Section3`
+  - Must use clickable hyperlinks (teal, no underline)
+  - Explicitly prohibits table or vertical list formats
+
+### Documentation
+
+- Added "MANDATORY: Screenshot Placeholder Table Format" section to SKILL.md
+- Added "Table of Contents Format" section with correct/incorrect examples
+- Added "MANDATORY Output Format Rules" section to Phase 5 in interactive_wizard.md
+
+---
+
+## v4.7 - Wizard Discoverability & Screenshot Placeholders (Dec 2025)
+
+### New Features
+
+- **Explicit wizard activation**: Added "wizard", "interactive", and "interactive mode" as trigger words
+  - Previously only worked with phrases like "create procedure"
+  - Now users can simply say "wizard" or "interactive mode" to start
+
+- **Screenshot placeholder tables for novel procedures**: When generating new procedures (not reformatting existing ones), steps matching screenshot patterns now automatically include two-column tables with placeholder descriptions:
+  - Login/authentication steps (HIGH priority)
+  - Dropdown/selection steps (MEDIUM priority)
+  - Navigation to menus/screens/tabs (MEDIUM priority)
+  - Error/warning message handling (HIGH priority)
+  - Form completion steps (HIGH priority)
+  - Confirmation/success screens (MEDIUM priority)
+
+- **Manual screenshot override**: Include `[screenshot]` in step text to force a placeholder even if no pattern match
+
+- **End-of-wizard screenshot summary**: Shows how many steps have placeholders with option to add more
+
+### Documentation
+
+- Added prominent "Interactive Procedure Wizard" section to SKILL.md with trigger words and example prompts
+- Updated frontmatter description to explicitly mention wizard trigger words
+- Added comprehensive "Screenshot Placeholder Tables for Novel Procedures" section to interactive_wizard.md
+- Added `placeholder_template` fields to all screenshot triggers in suggestion_triggers.json
+
+### Files Modified
+
+- `SKILL.md`: Updated frontmatter description; added wizard quick reference section; version bump to 4.7
+- `resources/interactive_wizard.md`: Added new triggers; added screenshot placeholder documentation
+- `resources/wizard_prompts.json`: Added "wizard", "interactive", "interactive mode" to activation_triggers
+- `resources/suggestion_triggers.json`: Added placeholder_template to each screenshot recommendation
 
 ---
 

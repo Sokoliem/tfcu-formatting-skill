@@ -1,0 +1,419 @@
+{
+  "version": "1.1",
+  "description": "Configuration for Quick Reference Card Generator - extraction rules, triggers, and layout settings (v5.0 with anti-hallucination safeguards)",
+
+  "activation_triggers": [
+    "quick reference",
+    "cheat sheet",
+    "job aid",
+    "quick card",
+    "reference card",
+    "one pager",
+    "laminated card",
+    "desk reference",
+    "quick guide"
+  ],
+
+  "auto_offer": true,
+  "auto_offer_description": "Automatically offer quick card generation at end of wizard Phase 5 (after assessment offer)",
+
+  "extraction_rules": {
+    "always_include": {
+      "description": "Content that MUST appear on every quick card",
+      "sources": [
+        {
+          "id": "critical_callouts",
+          "selector": "callout_type == 'CRITICAL'",
+          "max_items": 3,
+          "priority": 1,
+          "target_section": "watch_out_for"
+        },
+        {
+          "id": "warning_callouts",
+          "selector": "callout_type == 'WARNING'",
+          "max_items": 2,
+          "priority": 2,
+          "target_section": "watch_out_for"
+        },
+        {
+          "id": "prerequisites",
+          "selector": "section == 'PREREQUISITES'",
+          "max_items": 4,
+          "priority": 3,
+          "target_section": "before_you_start"
+        },
+        {
+          "id": "escalation_contacts",
+          "patterns": ["contact", "call", "escalate", "supervisor", "support", "help desk", "ext\\.", "1-800", "1-888"],
+          "max_items": 4,
+          "priority": 1,
+          "target_section": "quick_contacts"
+        }
+      ]
+    },
+
+    "smart_extract": {
+      "description": "Content selected by algorithm based on importance",
+      "step_selection": {
+        "max_steps": 8,
+        "prioritization": [
+          {
+            "weight": 0.30,
+            "criteria": "contains_decision_point",
+            "patterns": ["\\bif\\b", "\\bwhen\\b", "\\bchoose\\b", "select.*from", "\\beither\\b", "\\bor\\b.*option"],
+            "description": "Steps with if/when logic or selection choices"
+          },
+          {
+            "weight": 0.25,
+            "criteria": "has_verification",
+            "patterns": ["\\bverify\\b", "\\bconfirm\\b", "\\bcheck\\b", "\\bensure\\b", "\\bvalidate\\b"],
+            "description": "Steps requiring verification before proceeding"
+          },
+          {
+            "weight": 0.20,
+            "criteria": "first_last_in_section",
+            "description": "Beginning and ending steps anchor the workflow"
+          },
+          {
+            "weight": 0.15,
+            "criteria": "has_callout",
+            "description": "Steps with attached WARNING or CRITICAL callouts"
+          },
+          {
+            "weight": 0.10,
+            "criteria": "data_entry",
+            "patterns": ["\\benter\\b", "\\btype\\b", "\\binput\\b", "\\bfill\\b", "\\bkey in\\b"],
+            "description": "Steps involving data entry"
+          }
+        ]
+      },
+      "quick_reference_values": {
+        "always_include": true,
+        "source": "QUICK REFERENCE section from procedure",
+        "max_items": 8
+      }
+    },
+
+    "formatting_rules": {
+      "max_words_per_step": 25,
+      "use_checkbox_format": true,
+      "condense_substeps": true,
+      "abbreviation_glossary": {
+        "enabled": true,
+        "common_abbreviations": {
+          "Member Services Representative": "MSR",
+          "Account Number": "Acct #",
+          "Transaction": "Txn",
+          "Identification": "ID",
+          "Currency Transaction Report": "CTR",
+          "Suspicious Activity Report": "SAR",
+          "Bank Identification Number": "BIN",
+          "Personal Identification Number": "PIN",
+          "Automated Clearing House": "ACH",
+          "Electronic Funds Transfer": "EFT"
+        }
+      }
+    },
+
+    "marker_propagation": {
+      "description": "Anti-hallucination: Preserve intervention markers from source procedure in extracted content",
+      "enabled": true,
+      "preserve_markers": ["VERIFY", "CONFIRM", "SME_INPUT", "MISSING", "CHECK"],
+      "auto_generated_marker": {
+        "type": "SUGGESTED",
+        "format": "[SUGGESTED: {reason}]",
+        "style": {"color": "C00000", "italics": true}
+      },
+      "marker_handling": {
+        "key_steps": {
+          "if_marker_present": "preserve_marker_in_step",
+          "note": "Step text includes marker exactly as it appears in source"
+        },
+        "watch_out_for": {
+          "if_marker_present": "preserve_marker_in_callout",
+          "note": "Callout text includes marker"
+        },
+        "quick_contacts": {
+          "if_marker_present": "preserve_marker_in_value",
+          "note": "Contact value includes marker (e.g., '1-800-XXX-XXXX [VERIFY: current?]')"
+        },
+        "before_you_start": {
+          "if_auto_generated": "add_suggested_marker",
+          "marker_reason": "not from source procedure"
+        },
+        "when_to_escalate": {
+          "if_marker_present": "preserve_marker",
+          "if_auto_generated": "add_suggested_marker"
+        }
+      },
+      "summary_output": {
+        "show_marker_count": true,
+        "instruction": "Review the card and resolve all markers before laminating or distributing to staff."
+      }
+    }
+  },
+
+  "card_sections": {
+    "before_you_start": {
+      "order": 1,
+      "title": "BEFORE YOU START",
+      "source": "prerequisites",
+      "icon": "checkbox",
+      "icon_char": "☐",
+      "format": "checkbox_list",
+      "max_items": 4,
+      "column": "left",
+      "fallback_message": "No prerequisites identified",
+      "suggest_common": true
+    },
+    "key_steps": {
+      "order": 2,
+      "title": "KEY STEPS",
+      "source": "smart_extract.step_selection",
+      "icon": "numbered",
+      "icon_char": "#",
+      "format": "condensed_steps",
+      "max_items": 8,
+      "column": "left",
+      "fallback_message": "Unable to extract key steps"
+    },
+    "watch_out_for": {
+      "order": 3,
+      "title": "WATCH OUT FOR",
+      "source": ["critical_callouts", "warning_callouts"],
+      "icon": "warning",
+      "icon_char": "⚠",
+      "format": "callout_list",
+      "max_items": 4,
+      "column": "right",
+      "fallback_message": "No warnings identified",
+      "auto_generate_option": true
+    },
+    "when_to_escalate": {
+      "order": 4,
+      "title": "WHEN TO ESCALATE",
+      "source": "escalation_triggers",
+      "icon": "arrow",
+      "icon_char": "→",
+      "format": "condition_action_pairs",
+      "max_items": 3,
+      "column": "right",
+      "fallback_message": "No escalation triggers identified"
+    },
+    "quick_contacts": {
+      "order": 5,
+      "title": "QUICK CONTACTS",
+      "source": "escalation_contacts",
+      "icon": "phone",
+      "icon_char": "☎",
+      "format": "label_value_grid",
+      "max_items": 4,
+      "column": "right",
+      "fallback_message": "No contacts found",
+      "default_contacts": [
+        {"label": "IT Help Desk", "value": "ext. 4500"},
+        {"label": "Supervisor", "value": "[Fill in]"},
+        {"label": "Member Services", "value": "907-790-5050"}
+      ]
+    }
+  },
+
+  "escalation_triggers": {
+    "description": "Patterns that indicate escalation scenarios",
+    "patterns": [
+      {
+        "pattern": "error.*persist|cannot resolve|still (not|doesn't)",
+        "condition": "Error persists after retry",
+        "action": "Contact IT Support"
+      },
+      {
+        "pattern": "account.*(restrict|hold|frozen)|fraud|suspicious",
+        "condition": "Account restricted or suspicious activity",
+        "action": "Contact Supervisor"
+      },
+      {
+        "pattern": "\\$10,?000|CTR|SAR|BSA",
+        "condition": "Compliance threshold or reporting",
+        "action": "Contact Compliance Officer"
+      },
+      {
+        "pattern": "hardware.*fail|device.*(not|won't).*respond|printer.*jam",
+        "condition": "Equipment malfunction",
+        "action": "Contact Help Desk"
+      },
+      {
+        "pattern": "member.*(complaint|upset|angry)|escalate",
+        "condition": "Member dissatisfaction",
+        "action": "Contact Supervisor"
+      },
+      {
+        "pattern": "override|exception|approval.*required",
+        "condition": "Requires management approval",
+        "action": "Contact Supervisor"
+      }
+    ]
+  },
+
+  "auto_generate_warnings": {
+    "description": "Warnings to suggest when no callouts are found in procedure",
+    "by_procedure_type": {
+      "system": [
+        "Always verify account number before proceeding",
+        "Complete all steps before closing the transaction",
+        "Log out when leaving workstation unattended"
+      ],
+      "member_facing": [
+        "Confirm member identity before revealing account details",
+        "Never share login credentials with members",
+        "Document all verbal authorizations"
+      ],
+      "compliance": [
+        "Follow all regulatory requirements exactly as stated",
+        "Retain required documentation per retention schedule",
+        "Report suspicious activity immediately"
+      ],
+      "default": [
+        "Verify information before submitting",
+        "Follow steps in order - do not skip ahead",
+        "Contact supervisor if unsure how to proceed"
+      ]
+    }
+  },
+
+  "common_prerequisites": {
+    "description": "Suggested prerequisites when none found in procedure",
+    "by_procedure_type": {
+      "system": [
+        "System access granted (login credentials active)",
+        "Required training completed",
+        "Appropriate permissions assigned"
+      ],
+      "operational": [
+        "Workstation ready and logged in",
+        "Required supplies available",
+        "Member account information verified"
+      ],
+      "compliance": [
+        "Current on required compliance training",
+        "Access to compliance reference materials",
+        "Understanding of reporting thresholds"
+      ],
+      "default": [
+        "Logged into required system(s)",
+        "Member identity verified",
+        "All required information collected"
+      ]
+    }
+  },
+
+  "output_options": {
+    "standalone_document": {
+      "label": "Generate quick reference card",
+      "description": "Create standalone one-page landscape DOCX",
+      "filename_pattern": "{procedure_name}_QuickCard_{YYYYMM}.docx"
+    }
+  },
+
+  "layout": {
+    "_spec_reference": "See validator/spec-config.js → crossDocumentFormatting.documentTypes.quickCard for authoritative values",
+    "orientation": "landscape",
+    "page_size": "letter",
+    "page_width_inches": 11,
+    "page_height_inches": 8.5,
+    "margins": {
+      "top": 0.5,
+      "bottom": 0.5,
+      "left": 0.5,
+      "right": 0.5
+    },
+    "header": {
+      "height_inches": 0.6,
+      "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.headerBg",
+      "background_color": "154747",
+      "_text_ref": "spec-config.js → crossDocumentFormatting.brandColors.headerText",
+      "text_color": "FFFFFF",
+      "font_size_pt": 12
+    },
+    "footer": {
+      "height_inches": 0.3,
+      "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.footerText",
+      "text_color": "666666",
+      "font_size_pt": 8,
+      "disclaimer": "For training use only"
+    },
+    "columns": {
+      "count": 2,
+      "gutter_inches": 0.25,
+      "left_width_percent": 50,
+      "right_width_percent": 50
+    },
+    "typography": {
+      "_font_ref": "MUST use spec-config.js → crossDocumentFormatting.fonts (Calibri primary, Consolas monospace)",
+      "section_header": {
+        "font": "Calibri",
+        "size_pt": 12,
+        "bold": true,
+        "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.accentText",
+        "color": "154747"
+      },
+      "body_text": {
+        "font": "Calibri",
+        "size_pt": 10,
+        "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.bodyText",
+        "color": "000000"
+      },
+      "contact_values": {
+        "_note": "Phone numbers, extensions use monospace font",
+        "font": "Consolas",
+        "size_pt": 9,
+        "color": "000000"
+      },
+      "intervention_markers": {
+        "_ref": "MUST use spec-config.js → crossDocumentFormatting.interventionMarkers",
+        "font": "Calibri",
+        "size_pt": 10,
+        "color": "C00000",
+        "bold": true,
+        "italics": true,
+        "highlight": "yellow"
+      }
+    },
+    "spacing": {
+      "section_gap_pt": 12,
+      "line_spacing": 1.15,
+      "item_spacing_pt": 6
+    }
+  },
+
+  "edge_case_handling": {
+    "short_procedure": {
+      "threshold_steps": 5,
+      "message": "This procedure has only {step_count} steps. A quick reference card may not add significant value over the full procedure.",
+      "options": ["Generate card anyway", "Skip card generation"]
+    },
+    "no_callouts": {
+      "message": "No CRITICAL or WARNING callouts found in this procedure.",
+      "options": ["Auto-generate warnings from patterns", "Add warnings manually", "Skip 'Watch Out For' section"]
+    },
+    "no_contacts": {
+      "message": "No escalation contacts found in the procedure.",
+      "options": ["Add standard TFCU contacts", "Enter custom contacts", "Skip contacts section"]
+    },
+    "long_procedure": {
+      "threshold_steps": 25,
+      "message": "This procedure has {step_count} steps. A quick card can include a maximum of 8 key steps.",
+      "options": ["Accept prioritized selection", "Review and modify step selection"]
+    },
+    "no_prerequisites": {
+      "message": "No prerequisites section found in this procedure.",
+      "options": ["Suggest common prerequisites", "Enter custom prerequisites", "Skip 'Before You Start' section"]
+    }
+  },
+
+  "callout_icons": {
+    "CRITICAL": "⛔",
+    "WARNING": "⚠️",
+    "NOTE": "ℹ️",
+    "TIP": "✅"
+  }
+}

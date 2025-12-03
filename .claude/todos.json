@@ -1,46 +1,6 @@
 {
-  "updated_at": "2025-12-02T04:37:08.440362Z",
+  "updated_at": "2025-12-03T21:39:17.704465Z",
   "tasks": [
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
-      "line": 143,
-      "keyword": "NOTE",
-      "message": "/INFO, TIP",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
-      "line": 152,
-      "keyword": "NOTE",
-      "message": "\", \"INFO\", \"TIP\"];",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
-      "line": 161,
-      "keyword": "NOTE",
-      "message": "(same styling)",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
-      "line": 479,
-      "keyword": "NOTE",
-      "message": "\", \"INFO\", \"TIP\"];",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
     {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_example.js",
       "line": 359,
@@ -125,53 +85,10 @@
       "tags": []
     },
     {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
-      "line": 11,
-      "keyword": "BUG",
-      "message": "Fixes",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
-      "line": 316,
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\scripts\\revision_analyzer.py",
+      "line": 121,
       "keyword": "NOTE",
-      "message": "/TIP with correct colors",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
-      "line": 698,
-      "keyword": "NOTE",
-      "message": "**: v3.1 unified these modes into a single user-upload workflow.",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": []
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
-      "line": 765,
-      "keyword": "NOTE",
-      "message": "border |  |  |",
-      "owner": null,
-      "due": null,
-      "priority": null,
-      "tags": [
-        "0c5460",
-        "2e74b5"
-      ]
-    },
-    {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
-      "line": 823,
-      "keyword": "BUG",
-      "message": "Fixes",
+      "message": "|important|warning|caution)\\s*:?\\s*.{20,}\",",
       "owner": null,
       "due": null,
       "priority": null,
@@ -179,7 +96,7 @@
     },
     {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\screenshot_processor.py",
-      "line": 1579,
+      "line": 1608,
       "keyword": "NOTE",
       "message": "preprocessing with crop/resize should be applied if needed",
       "owner": null,
@@ -188,8 +105,581 @@
       "tags": []
     },
     {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\quick_card_generator.md",
+      "line": 298,
+      "keyword": "NOTE",
+      "message": "This quick reference supplements but does not replace the full",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\assessment_generator.md",
+      "line": 129,
+      "keyword": "NOTE",
+      "message": "\"This procedure is brief. Hands-on verification with a supervisor is recommended to confirm proficiency.\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\quick_card_prompts.json",
+      "line": 130,
+      "keyword": "NOTE",
+      "message": "\": \"Step text includes marker exactly as it appears in source\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\quick_card_prompts.json",
+      "line": 134,
+      "keyword": "NOTE",
+      "message": "\": \"Callout text includes marker\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\quick_card_prompts.json",
+      "line": 138,
+      "keyword": "NOTE",
+      "message": "\": \"Contact value includes marker (e.g., '1-800-XXX-XXXX [VERIFY: current?]')\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\quick_card_prompts.json",
+      "line": 399,
+      "keyword": "NOTE",
+      "message": "\": \"\u2139\ufe0f\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\assessment_prompts.json",
+      "line": 137,
+      "keyword": "NOTE",
+      "message": "\": [\"recall\"],",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\assessment_prompts.json",
+      "line": 196,
+      "keyword": "NOTE",
+      "message": "\": \"For compliance statements, use regulatory requirements only\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\assessment_prompts.json",
+      "line": 242,
+      "keyword": "NOTE",
+      "message": "\": \"Assessment excludes content with unresolved markers. Resolve all procedure markers before generating final assessment.\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\suggestion_triggers.json",
+      "line": 235,
+      "keyword": "NOTE",
+      "message": "|remember|keep in mind|fyi|for your information)\\\\b\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\suggestion_triggers.json",
+      "line": 609,
+      "keyword": "NOTE",
+      "message": "\": \"Reg D limits were suspended in 2020; verify current status\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\wizard_prompts.json",
+      "line": 311,
+      "keyword": "NOTE",
+      "message": "\": \"Model applies spec-config.js values programmatically - no user intervention needed\"",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\wizard_prompts.json",
+      "line": 411,
+      "keyword": "NOTE",
+      "message": "|fyi|for your information|remember\", \"callout_type\": \"info\"},",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 210,
+      "keyword": "NOTE",
+      "message": "Procedure name adjusted for filename compatibility",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 436,
+      "keyword": "NOTE",
+      "message": "/remember patterns",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 451,
+      "keyword": "NOTE",
+      "message": "Contact info requires user input (TFCU-specific) and will trigger",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 601,
+      "keyword": "NOTE",
+      "message": "suggestions in comments)",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 776,
+      "keyword": "NOTE",
+      "message": "Assessment is generated automatically as part of the standard",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 814,
+      "keyword": "NOTE",
+      "message": "Quick card is generated automatically as part of the standard",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 829,
+      "keyword": "NOTE",
+      "message": "is included in the validation report",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
+      "line": 831,
+      "keyword": "NOTE",
+      "message": "Procedure has only 4 steps. Quick card includes all steps.",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\visual_elements.md",
+      "line": 83,
+      "keyword": "NOTE",
+      "message": "**: These values mirror `validator/spec-config.js`. Update spec-config.js first, then sync here.",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\visual_elements.md",
+      "line": 119,
+      "keyword": "NOTE",
+      "message": "| \u2139\ufe0f |  |  | Helpful context, tips, additional info |",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": [
+        "d1ecf1",
+        "2e74b5"
+      ]
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\visual_elements.md",
+      "line": 132,
+      "keyword": "NOTE",
+      "message": "{ bg: \"D1ECF1\", border: \"2E74B5\", icon: \"\u2139\ufe0f\" },",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_template.js",
+      "line": 208,
+      "keyword": "NOTE",
+      "message": "{ bg: TFCU_COLORS.NOTE_BG, border: TFCU_COLORS.NOTE_BORDER, icon: \"\u00e2\u201e\u00b9\u00ef\u00b8\udc8f\" },",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_template.js",
+      "line": 742,
+      "keyword": "NOTE",
+      "message": "callout",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_template.js",
+      "line": 743,
+      "keyword": "NOTE",
+      "message": "\", \"NOTE: Processing Time\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_template.js",
+      "line": 817,
+      "keyword": "NOTE",
+      "message": ", TIP)\");",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 167,
+      "keyword": "NOTE",
+      "message": "= null) {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 206,
+      "keyword": "NOTE",
+      "message": "(if provided)",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 207,
+      "keyword": "NOTE",
+      "message": ") {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 215,
+      "keyword": "NOTE",
+      "message": ",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 232,
+      "keyword": "NOTE",
+      "message": "= null) {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 258,
+      "keyword": "NOTE",
+      "message": ") {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 266,
+      "keyword": "NOTE",
+      "message": ",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 283,
+      "keyword": "NOTE",
+      "message": "= null) {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 314,
+      "keyword": "NOTE",
+      "message": ") {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 322,
+      "keyword": "NOTE",
+      "message": ",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 339,
+      "keyword": "NOTE",
+      "message": "= null) {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 383,
+      "keyword": "NOTE",
+      "message": ") {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 391,
+      "keyword": "NOTE",
+      "message": ",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_assessment_template.js",
+      "line": 678,
+      "keyword": "NOTE",
+      "message": "about this template",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 146,
+      "keyword": "NOTE",
+      "message": "= null) {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 165,
+      "keyword": "NOTE",
+      "message": ") {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 172,
+      "keyword": "NOTE",
+      "message": ",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 189,
+      "keyword": "NOTE",
+      "message": "= null) {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 209,
+      "keyword": "NOTE",
+      "message": ") {",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 216,
+      "keyword": "NOTE",
+      "message": ",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 374,
+      "keyword": "NOTE",
+      "message": "box",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 467,
+      "keyword": "NOTE",
+      "message": "",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 652,
+      "keyword": "NOTE",
+      "message": "",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\generate_quickcard_template.js",
+      "line": 747,
+      "keyword": "NOTE",
+      "message": "This quick reference supplements but does not replace the full procedure. Staff should complete full training before using this card.\",",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
+      "line": 149,
+      "keyword": "NOTE",
+      "message": "/INFO, TIP",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
+      "line": 158,
+      "keyword": "NOTE",
+      "message": "\", \"INFO\", \"TIP\"];",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
+      "line": 167,
+      "keyword": "NOTE",
+      "message": "(same styling)",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\validator\\validated-helpers.js",
+      "line": 486,
+      "keyword": "NOTE",
+      "message": "\", \"INFO\", \"TIP\"];",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\SKILL.md",
-      "line": 160,
+      "line": 336,
+      "keyword": "NOTE",
+      "message": "\\|remember\\|fyi` | INFO | \u2139\ufe0f |",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\SKILL.md",
+      "line": 833,
       "keyword": "NOTE",
       "message": "|  |  | Info |",
       "owner": null,
@@ -202,7 +692,7 @@
     },
     {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\SKILL.md",
-      "line": 192,
+      "line": 865,
       "keyword": "NOTE",
       "message": "| Helpful context; tips; additional information |",
       "owner": null,
@@ -211,8 +701,58 @@
       "tags": []
     },
     {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\SKILL.md",
+      "line": 883,
+      "keyword": "NOTE",
+      "message": "** | \"Note that\", context, background info, FYI, explains why | Anything actionable |",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\SKILL.md",
+      "line": 889,
+      "keyword": "NOTE",
+      "message": "**",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\SKILL.md",
+      "line": 959,
+      "keyword": "NOTE",
+      "message": "the account number shown\" \u2192 BLUE callout (informational)",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
-      "line": 334,
+      "line": 32,
+      "keyword": "NOTE",
+      "message": "",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
+      "line": 340,
+      "keyword": "NOTE",
+      "message": "Paragraph, NOT Table",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
+      "line": 428,
       "keyword": "NOTE",
       "message": "{ bg: CALLOUT_COLORS.NOTE_BG, border: CALLOUT_COLORS.NOTE_BORDER, icon: \"\u2139\ufe0f\" },",
       "owner": null,
@@ -222,7 +762,7 @@
     },
     {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
-      "line": 401,
+      "line": 495,
       "keyword": "NOTE",
       "message": "{ bg: CALLOUT_COLORS.NOTE_BG, border: CALLOUT_COLORS.NOTE_BORDER, icon: \"\u2139\ufe0f\" },",
       "owner": null,
@@ -232,7 +772,27 @@
     },
     {
       "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
-      "line": 1050,
+      "line": 599,
+      "keyword": "NOTE",
+      "message": "{ bg: CALLOUT_COLORS.NOTE_BG, border: CALLOUT_COLORS.NOTE_BORDER, icon: \"\u2139\ufe0f\" },",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
+      "line": 1672,
+      "keyword": "NOTE",
+      "message": "\"\u2139\ufe0f\", TIP: \"\u2705\" };",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\REFERENCE.md",
+      "line": 2433,
       "keyword": "NOTE",
       "message": "\",",
       "owner": null,
@@ -241,40 +801,115 @@
       "tags": []
     },
     {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\interactive_wizard.md",
-      "line": 352,
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\tests\\VERIFICATION_TESTS.md",
+      "line": 83,
       "keyword": "NOTE",
-      "message": "suggestions in comments)",
+      "message": "|  (blue) |",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": [
+        "2e74b5"
+      ]
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\tests\\VERIFICATION_TESTS.md",
+      "line": 150,
+      "keyword": "NOTE",
+      "message": "pass/fail for each criterion",
       "owner": null,
       "due": null,
       "priority": null,
       "tags": []
     },
     {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\wizard_prompts.json",
-      "line": 297,
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 135,
       "keyword": "NOTE",
-      "message": "|fyi|for your information|remember\", \"callout_type\": \"info\"},",
+      "message": ", TIP) with correct colors",
       "owner": null,
       "due": null,
       "priority": null,
       "tags": []
     },
     {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\resources\\suggestion_triggers.json",
-      "line": 163,
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 449,
       "keyword": "NOTE",
-      "message": "|remember|keep in mind|fyi|for your information)\\\\b\",",
+      "message": "",
       "owner": null,
       "due": null,
       "priority": null,
       "tags": []
     },
     {
-      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\scripts\\revision_analyzer.py",
-      "line": 121,
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 629,
+      "keyword": "BUG",
+      "message": "Fixes",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 662,
+      "keyword": "BUG",
+      "message": "Fixes",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 755,
+      "keyword": "BUG",
+      "message": "Fixes",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 1060,
       "keyword": "NOTE",
-      "message": "|important|warning|caution)\\s*:?\\s*.{20,}\",",
+      "message": "/TIP with correct colors",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 1442,
+      "keyword": "NOTE",
+      "message": "**: v3.1 unified these modes into a single user-upload workflow.",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": []
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 1509,
+      "keyword": "NOTE",
+      "message": "border |  |  |",
+      "owner": null,
+      "due": null,
+      "priority": null,
+      "tags": [
+        "0c5460",
+        "2e74b5"
+      ]
+    },
+    {
+      "file": "C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\CHANGELOG.md",
+      "line": 1567,
+      "keyword": "BUG",
+      "message": "Fixes",
       "owner": null,
       "due": null,
       "priority": null,

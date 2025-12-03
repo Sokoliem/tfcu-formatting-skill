@@ -1,15 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir:*)",
-      "Bash(unzip:*)",
-      "Bash(powershell -Command \"Expand-Archive -Path ''tfcu-procedure-formatter.skill'' -DestinationPath ''skill-extracted'' -Force; Get-ChildItem -Path ''skill-extracted'' -Recurse | Select-Object FullName\")",
-      "Bash(powershell:*)",
-      "WebSearch",
-      "WebFetch(domain:www.officeopenxml.com)",
-      "WebFetch(domain:www.toptal.com)",
-      "Bash(find:*)",
-      "WebFetch(domain:www.claude.com)"
+      "Bash(python:*)",
+      "Bash(node generate_template.js:*)",
+      "Bash(copy \"C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\assets\\Procedure_Template.docx\" \"C:\\Users\\emsok\\Downloads\\TFCU-procedure-formatter\\extracted-skill\\tfcu-procedure-formatter\\assets\\Procedure_Template.docx\" /Y)"
     ],
     "deny": [],
     "ask": []

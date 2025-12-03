@@ -1,0 +1,328 @@
+{
+  "version": "1.1",
+  "description": "Configuration for Training Assessment Generator - question templates, triggers, and settings (v5.0 with anti-hallucination safeguards)",
+
+  "activation_triggers": [
+    "generate assessment",
+    "create quiz",
+    "training questions",
+    "competency check",
+    "knowledge check",
+    "test questions",
+    "create test",
+    "assessment"
+  ],
+
+  "auto_offer": true,
+  "auto_offer_description": "Automatically offer assessment generation at end of wizard Phase 5",
+
+  "question_templates": {
+    "ordering": {
+      "templates": [
+        "What is the {ordinal} step in the {section_name} process?",
+        "Which step comes immediately AFTER {previous_step}?",
+        "Before you can {action}, what must be completed first?"
+      ],
+      "source": "Sequential procedure steps",
+      "difficulty": "recall",
+      "distractor_strategy": "Use other steps from the same procedure section"
+    },
+    "true_false": {
+      "templates": [
+        "{statement_from_callout}",
+        "It is acceptable to {prohibited_action} under certain circumstances.",
+        "{required_action} is mandatory for all {transaction_type}."
+      ],
+      "source": "CRITICAL and WARNING callouts",
+      "difficulty": "recall",
+      "prefer_true_answers": true,
+      "true_answer_ratio": 0.6
+    },
+    "fill_blank": {
+      "templates": [
+        "When entering {field_name}, what should you verify before proceeding?",
+        "What information must be collected before processing a {transaction_type}?",
+        "If {error_condition} occurs, what is the correct resolution?"
+      ],
+      "source": "Data entry steps with verification requirements",
+      "difficulty": "application"
+    },
+    "scenario": {
+      "templates": [
+        "A member {scenario_setup}. According to the procedure, what should you do?",
+        "You are processing a {transaction_type} when {complication}. What is the correct next step?",
+        "A supervisor asks you to {request}. Based on this procedure, how should you respond?"
+      ],
+      "source": "Decision points, if/then logic, troubleshooting scenarios",
+      "difficulty": "scenario"
+    },
+    "recall": {
+      "templates": [
+        "What is the {reference_item} listed in the Quick Reference?",
+        "According to the procedure, what is the threshold for {threshold_type}?",
+        "Which department is responsible for {responsibility}?"
+      ],
+      "source": "Quick Reference box values, specific numbers/thresholds",
+      "difficulty": "recall"
+    },
+    "navigation": {
+      "templates": [
+        "To access {destination}, navigate to:",
+        "Where in the system do you find {feature}?",
+        "What is the correct path to reach {screen_name}?"
+      ],
+      "source": "Navigation instructions in procedure steps",
+      "difficulty": "recall"
+    }
+  },
+
+  "difficulty_weights": {
+    "recall": 0.60,
+    "application": 0.30,
+    "scenario": 0.10
+  },
+
+  "question_count_by_procedure_length": {
+    "short": {
+      "step_threshold": 5,
+      "min_questions": 3,
+      "max_questions": 5
+    },
+    "medium": {
+      "step_threshold": 15,
+      "min_questions": 6,
+      "max_questions": 8
+    },
+    "long": {
+      "step_threshold": 999,
+      "min_questions": 9,
+      "max_questions": 12
+    }
+  },
+
+  "scoring": {
+    "pass_threshold": 0.80,
+    "pass_threshold_display": "80%",
+    "remediation_threshold": 0.60,
+    "remediation_actions": [
+      "Review procedure with supervisor",
+      "Shadow experienced staff member",
+      "Retake assessment after additional training"
+    ]
+  },
+
+  "output_options": {
+    "append_to_procedure": {
+      "label": "Append to procedure document",
+      "description": "Add assessment section with page break at end of procedure"
+    },
+    "standalone_document": {
+      "label": "Generate separate document",
+      "description": "Create standalone assessment file",
+      "filename_pattern": "{procedure_name}_Assessment_{YYYYMM}.docx"
+    }
+  },
+
+  "disclaimers": {
+    "short_procedure": "This procedure is brief. Hands-on verification with a supervisor is recommended to confirm proficiency.",
+    "screenshot_heavy": "This assessment covers procedural knowledge. Visual recognition of screens should be verified through hands-on practice.",
+    "compliance_procedure": "Passing this assessment demonstrates procedural knowledge but does not constitute compliance certification. Formal training programs may have additional requirements.",
+    "general": "This assessment is designed to verify understanding of the procedure. It does not replace hands-on training or supervisor verification."
+  },
+
+  "element_to_question_mapping": {
+    "step_with_number": ["ordering", "recall"],
+    "callout_critical": ["true_false"],
+    "callout_warning": ["true_false"],
+    "callout_note": ["recall"],
+    "quick_reference": ["recall"],
+    "decision_point": ["scenario"],
+    "data_entry": ["fill_blank", "recall"],
+    "navigation": ["navigation", "ordering"],
+    "verification_step": ["application", "fill_blank"],
+    "troubleshooting": ["scenario"]
+  },
+
+  "distractor_verification": {
+    "description": "Anti-hallucination safeguards for assessment distractor (wrong answer) generation",
+    "verification_required": true,
+    "verification_prompt": "I've generated these wrong answer options. Please verify each is:\n1. Plausible (sounds reasonable to someone who hasn't memorized the procedure)\n2. Definitively wrong (not arguably correct in any context)\n3. Not a trick question\n\nDistractor: \"{distractor}\"\n→ Accept\n→ Replace with: _______\n→ Flag for SME review",
+
+    "never_auto_generate_for": [
+      "Compliance-related wrong answers (could create confusion about regulatory requirements)",
+      "Policy violation options (could suggest prohibited actions are acceptable)",
+      "Safety-related incorrect steps (could cause harm if memorized incorrectly)",
+      "TFCU-specific values as distractors (limits, thresholds, contacts)"
+    ],
+
+    "marker_for_unverified": {
+      "format": "[CHECK: distractor - verify plausibility]",
+      "style": {"color": "C00000", "italics": true}
+    },
+
+    "safe_distractor_sources": [
+      "Other steps from the same procedure (for ordering questions)",
+      "Generic incorrect approaches (e.g., 'Skip this step' for required steps)",
+      "Common misconceptions documented in procedure notes",
+      "Reasonable but incorrect timing/sequence"
+    ],
+
+    "distractor_rules": {
+      "min_plausibility": "Must sound reasonable to untrained staff",
+      "max_similarity": "Must be clearly distinguishable from correct answer",
+      "no_partial_credit": "Must be completely wrong, not partially correct",
+      "no_negatives": "Avoid 'Which is NOT...' question formats",
+      "no_tricks": "Avoid subtle wording tricks that test reading comprehension vs. procedure knowledge"
+    }
+  },
+
+  "question_generation_rules": {
+    "description": "Rules for which question types can be auto-generated vs. require user input",
+    "rules": {
+      "recall_questions": {
+        "auto_generate": true,
+        "marker_needed": false,
+        "condition": "Direct quote or value exists in procedure text"
+      },
+      "ordering_questions": {
+        "auto_generate": true,
+        "marker_needed": false,
+        "condition": "Step sequence is explicitly numbered in procedure"
+      },
+      "true_false_questions": {
+        "auto_generate": true,
+        "marker_needed": false,
+        "condition": "Statement is directly from CRITICAL/WARNING callout",
+        "note": "For compliance statements, use regulatory requirements only"
+      },
+      "fill_blank_questions": {
+        "auto_generate": true,
+        "marker_needed": true,
+        "marker": "[CONFIRM: fill-blank answer is directly from procedure]"
+      },
+      "application_questions": {
+        "auto_generate": true,
+        "marker_needed": true,
+        "marker": "[CONFIRM: application question is answerable from procedure text]"
+      },
+      "scenario_questions": {
+        "auto_generate": false,
+        "marker_needed": true,
+        "marker": "[SME INPUT REQUIRED: verify scenario is realistic and answer is clear]",
+        "prompt_user": "I need help creating a realistic scenario question. What situation would test this decision point?"
+      }
+    }
+  },
+
+  "content_with_markers": {
+    "description": "How to handle procedure content that contains intervention markers",
+    "rules": [
+      {
+        "marker_type": "VERIFY",
+        "action": "exclude_from_questions",
+        "reason": "Cannot create questions about unverified values"
+      },
+      {
+        "marker_type": "SME_INPUT",
+        "action": "exclude_from_questions",
+        "reason": "Missing information cannot be tested"
+      },
+      {
+        "marker_type": "CONFIRM",
+        "action": "exclude_from_questions",
+        "reason": "Unconfirmed content should not be tested"
+      },
+      {
+        "marker_type": "SUGGESTED",
+        "action": "flag_question",
+        "reason": "Question based on suggested content needs review",
+        "marker": "[CHECK: question based on suggested content]"
+      }
+    ],
+    "summary_note": "Assessment excludes content with unresolved markers. Resolve all procedure markers before generating final assessment."
+  },
+
+  "layout": {
+    "_spec_reference": "See validator/spec-config.js → crossDocumentFormatting.documentTypes.assessment for authoritative values",
+    "orientation": "portrait",
+    "page_size": "letter",
+    "page_width_inches": 8.5,
+    "page_height_inches": 11,
+    "margins": {
+      "top": 0.5,
+      "bottom": 0.5,
+      "left": 0.75,
+      "right": 0.75
+    },
+    "header": {
+      "height_inches": 0.5,
+      "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.headerBg",
+      "background_color": "154747",
+      "_text_ref": "spec-config.js → crossDocumentFormatting.brandColors.headerText",
+      "text_color": "FFFFFF",
+      "title_text": "PROCEDURE COMPETENCY ASSESSMENT"
+    },
+    "footer": {
+      "height_inches": 0.3,
+      "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.footerText",
+      "text_color": "666666",
+      "font_size_pt": 9,
+      "content": "Assessment for {procedure_name} | Page X of Y"
+    },
+    "typography": {
+      "_font_ref": "MUST use spec-config.js → crossDocumentFormatting.fonts (Calibri primary, Consolas monospace)",
+      "document_title": {
+        "font": "Calibri",
+        "size_pt": 14,
+        "bold": true,
+        "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.accentText",
+        "color": "154747"
+      },
+      "section_header": {
+        "font": "Calibri",
+        "size_pt": 12,
+        "bold": true,
+        "color": "154747"
+      },
+      "question_text": {
+        "font": "Calibri",
+        "size_pt": 11,
+        "_color_ref": "spec-config.js → crossDocumentFormatting.brandColors.bodyText",
+        "color": "000000"
+      },
+      "answer_options": {
+        "font": "Calibri",
+        "size_pt": 10,
+        "color": "000000",
+        "indent_inches": 0.25
+      },
+      "answer_key": {
+        "font": "Calibri",
+        "size_pt": 10,
+        "color": "000000",
+        "_note": "Answer key section uses same formatting as questions"
+      },
+      "instructions": {
+        "font": "Calibri",
+        "size_pt": 10,
+        "italics": true,
+        "color": "666666"
+      },
+      "intervention_markers": {
+        "_ref": "MUST use spec-config.js → crossDocumentFormatting.interventionMarkers",
+        "font": "Calibri",
+        "size_pt": 10,
+        "color": "C00000",
+        "bold": true,
+        "italics": true,
+        "highlight": "yellow"
+      }
+    },
+    "spacing": {
+      "question_gap_pt": 18,
+      "answer_gap_pt": 6,
+      "section_gap_pt": 24,
+      "line_spacing": 1.15
+    }
+  }
+}

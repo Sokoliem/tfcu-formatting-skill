@@ -1,12 +1,17 @@
-# TFCU Procedure Formatter - Code Reference v4.3.2
+# TFCU Procedure Formatter - Code Reference v6.1.0
 
 Complete implementation reference for the TFCU Procedure Formatter skill. This file contains all helper functions, JavaScript implementations, and detailed technical specifications.
+
+**Current Skill Version:** `v6.1.0` - Include this in document footers for traceability.
 
 ## Table of Contents
 
 - [Layout Constants](#layout-constants)
 - [Complete Implementation](#complete-implementation)
 - [Helper Functions](#helper-functions)
+- [Intervention Marker Helpers](#intervention-marker-helpers)
+- [Assessment Section Helpers](#assessment-section-helpers)
+- [Quick Card Helpers](#quick-card-helpers)
 - [Screenshot Processing Pipeline](#screenshot-processing-pipeline)
 - [Content Matching Engine](#content-matching-engine)
 - [Image Registry System](#image-registry-system)
@@ -15,6 +20,23 @@ Complete implementation reference for the TFCU Procedure Formatter skill. This f
 ---
 
 ## Layout Constants
+
+### Skill Version
+
+```javascript
+// Current skill version - include in footer for traceability
+// UPDATE THIS WITH EACH RELEASE
+const SKILL_VERSION = "v6.0";
+
+// ============================================================================
+// CONSTANTS NOTE
+// ============================================================================
+// All color values, font sizes, and spacing defined below match spec-config.js.
+// spec-config.js is the canonical source of truth for validation.
+// These inline constants are for document generation convenience.
+// If values conflict, spec-config.js wins.
+// ============================================================================
+```
 
 ### Column Widths & Margins
 
@@ -99,14 +121,18 @@ const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
         InternalHyperlink, ImageRun, Bookmark } = require('docx');
 const fs = require('fs');
 
-// Configuration
+// Configuration - ALWAYS use getCurrentDate() for date, never hardcode!
 const PROCEDURE = {
   name: "Procedure Name",
   department: "Department Name",
-  date: "Month Year",
-  overview: "Brief 2-4 sentence description."
+  date: getCurrentDate(),  // Dynamic - returns "December 2025" format
+  overview: "Brief 2-4 sentence description.",
+  filename: `${department}_${name.replace(/\s+/g, '_')}_${getCurrentDateYYYYMM()}.docx`
 };
 
+// ============================================================================
+// COLOR CONSTANTS - Mirrors validator/spec-config.js (update there first)
+// ============================================================================
 const TFCU_COLORS = {
   PRIMARY_TEAL: "154747",
   LIGHT_TEAL: "E8F4F4",
@@ -121,6 +147,18 @@ const CALLOUT_COLORS = {
   NOTE_BG: "D1ECF1", NOTE_BORDER: "2E74B5",
   CRITICAL_BG: "F8D7DA", CRITICAL_BORDER: "C00000",
   TIP_BG: "E2F0D9", TIP_BORDER: "548235"
+};
+
+// Standard section anchors - use these constants to ensure TOC links work
+const ANCHORS = {
+  OVERVIEW: "overview",
+  RELATED: "related",
+  QUICK_REFERENCE: "quick-reference",
+  PREREQUISITES: "prerequisites",
+  TROUBLESHOOTING: "troubleshooting",
+  GLOSSARY: "glossary",
+  REVISION_HISTORY: "revision-history",
+  ASSESSMENT: "assessment"
 };
 ```
 
@@ -167,6 +205,48 @@ const noBorders = {
 ---
 
 ## Helper Functions
+
+```javascript
+// ============================================================================
+// HELPER SELECTION GUIDE
+// ============================================================================
+// | Scenario                              | Helper                              |
+// |---------------------------------------|-------------------------------------|
+// | Step with existing screenshot         | createStepWithScreenshot()          |
+// | Step needs screenshot, none exists    | createStepWithScreenshotPlaceholder() |
+// | Text-only step, no screenshot needed  | createTextStep()                    |
+// | Standalone warning before section     | createCalloutBox()                  |
+// | Warning tied to specific step         | callout param in createStepWithScreenshot() |
+// | Issue/Cause/Resolution table          | createTroubleshootingTable()        |
+// | Figure Index appendix (REQUIRED)      | createFigureIndexAppendix()         |
+// | Term/Definition list                  | createGlossaryTable()               |
+// | Side-by-side comparison               | createComparisonTable()             |
+// | Date/Reviewer/Changes history         | createRevisionTable()               |
+// | Key values quick lookup               | createQuickReferenceBox()           |
+// | Get current date (Month YYYY format)  | getCurrentDate()                    |
+// | Get current date (YYYYMM format)      | getCurrentDateYYYYMM()              |
+// ============================================================================
+```
+
+### getCurrentDate
+
+**CRITICAL**: Always use these helpers for dates. Never hardcode dates like "December 2024".
+
+```javascript
+// Returns current date in "Month YYYY" format (e.g., "December 2025")
+function getCurrentDate() {
+  const now = new Date();
+  return now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+// Returns current date in "YYYYMM" format for filenames (e.g., "202512")
+function getCurrentDateYYYYMM() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${year}${month}`;
+}
+```
 
 ### createHeaderTable
 
@@ -233,8 +313,22 @@ function createSectionHeader(text, bookmarkId = null, pageBreakBefore = false) {
 
 ### createTableOfContents
 
+> **CRITICAL**: This function returns a SINGLE PARAGRAPH. The TOC must NEVER be in a table.
+
 ```javascript
+// ============================================================================
+// ANTI-PATTERN WARNING
+// ============================================================================
+// ❌ DO NOT create a Table for TOC
+// ❌ DO NOT create a vertical bullet list
+// ❌ DO NOT add a "CONTENTS" header cell
+// ✅ DO use this function which returns an inline horizontal paragraph
+// ============================================================================
+
 function createTableOfContents(sections) {
+  // Returns: "Contents: Section1 • Section2 • Section3"
+  // This is a PARAGRAPH, not a table!
+
   const tocLinks = sections.map((s, i) => [
     new InternalHyperlink({
       anchor: s.anchor,
@@ -243,7 +337,7 @@ function createTableOfContents(sections) {
     ...(i < sections.length - 1 ? [new TextRun({ text: "  •  ", size: 20, color: "999999" })] : [])
   ]).flat();
 
-  return new Paragraph({
+  return new Paragraph({  // ← Note: Paragraph, NOT Table
     spacing: { before: 80, after: 100 },
     children: [new TextRun({ text: "Contents: ", bold: true, size: 20 }), ...tocLinks]
   });
@@ -418,10 +512,12 @@ function createStepWithScreenshot({
   // Calculate aspect ratio from figure registry if available, else use 0.65 default
   let rightContent = [new Paragraph({ children: [] })];
   if (imagePath && fs.existsSync(imagePath)) {
-    // Try to get actual dimensions from figure registry
+    // Try to get actual dimensions from figure registry (defensive access)
     let aspectRatio = 0.65; // Default for standard UI screenshots
-    if (figureNumber && typeof figureRegistry !== 'undefined') {
-      const figData = figureRegistry.figures?.find(f => f.figure_number === figureNumber);
+    if (figureNumber) {
+      const figData = (typeof figureRegistry !== 'undefined' && figureRegistry?.figures)
+        ? figureRegistry.figures.find(f => f.figure_number === figureNumber)
+        : null;
       if (figData?.dimensions?.width && figData?.dimensions?.height) {
         aspectRatio = figData.dimensions.height / figData.dimensions.width;
       }
@@ -459,6 +555,119 @@ function createStepWithScreenshot({
 }
 ```
 
+### createStepWithScreenshotPlaceholder
+
+Used in TEMPLATE and CREATE modes when no screenshot exists yet.
+
+```javascript
+function createStepWithScreenshotPlaceholder({
+  stepNum,
+  text,
+  subSteps = [],
+  screenshotHint = "Capture relevant UI screenshot",
+  callout = null
+}) {
+  // Left column: step text and sub-steps (same pattern as createStepWithScreenshot)
+  const leftContent = [
+    new Paragraph({
+      alignment: AlignmentType.LEFT,
+      spacing: { after: 30 },
+      children: [
+        new TextRun({ text: stepNum + " ", bold: true, size: 22, font: "Calibri" }),
+        new TextRun({ text, size: 22, font: "Calibri" })
+      ]
+    })
+  ];
+
+  // Add sub-steps
+  subSteps.forEach((sub, i) => {
+    leftContent.push(new Paragraph({
+      alignment: AlignmentType.LEFT,
+      spacing: { after: 20 },
+      indent: { left: 300 },
+      children: [
+        new TextRun({ text: String.fromCharCode(97 + i) + ". ", bold: true, size: 20 }),
+        new TextRun({ text: sub, size: 20, font: "Calibri" })
+      ]
+    }));
+  });
+
+  // Add inline callout if provided
+  if (callout) {
+    const cc = {
+      WARNING: { bg: CALLOUT_COLORS.WARNING_BG, border: CALLOUT_COLORS.WARNING_BORDER, icon: "⚠️" },
+      NOTE: { bg: CALLOUT_COLORS.NOTE_BG, border: CALLOUT_COLORS.NOTE_BORDER, icon: "ℹ️" },
+      CRITICAL: { bg: CALLOUT_COLORS.CRITICAL_BG, border: CALLOUT_COLORS.CRITICAL_BORDER, icon: "⛔" },
+      TIP: { bg: CALLOUT_COLORS.TIP_BG, border: CALLOUT_COLORS.TIP_BORDER, icon: "✅" }
+    }[callout.type];
+    leftContent.push(new Paragraph({
+      shading: { fill: cc.bg, type: ShadingType.CLEAR },
+      border: { left: { style: BorderStyle.SINGLE, size: 32, color: cc.border } },
+      indent: { left: 216, right: 216 },
+      spacing: { before: 120, after: 120 },
+      children: [
+        new TextRun({ text: cc.icon + " ", bold: true, size: 20 }),
+        new TextRun({ text: callout.text, size: 20 })
+      ]
+    }));
+  }
+
+  // Right column: gray placeholder box
+  const rightContent = [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      shading: { fill: TFCU_COLORS.LIGHT_GRAY, type: ShadingType.CLEAR },
+      border: {
+        top: { style: BorderStyle.SINGLE, size: 8, color: "CCCCCC" },
+        bottom: { style: BorderStyle.SINGLE, size: 8, color: "CCCCCC" },
+        left: { style: BorderStyle.SINGLE, size: 8, color: "CCCCCC" },
+        right: { style: BorderStyle.SINGLE, size: 8, color: "CCCCCC" }
+      },
+      spacing: { before: 200, after: 60 },
+      children: [
+        new TextRun({ text: "[Screenshot Needed]", bold: true, size: 22, color: TFCU_COLORS.PRIMARY_TEAL })
+      ]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      shading: { fill: TFCU_COLORS.LIGHT_GRAY, type: ShadingType.CLEAR },
+      spacing: { after: 60 },
+      children: [
+        new TextRun({ text: screenshotHint, italics: true, size: 18, color: "666666" })
+      ]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      shading: { fill: TFCU_COLORS.LIGHT_GRAY, type: ShadingType.CLEAR },
+      spacing: { after: 200 },
+      children: [
+        new TextRun({ text: "Replace with annotated image after capture.", size: 16, color: "999999" })
+      ]
+    })
+  ];
+
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [new TableRow({ children: [
+      new TableCell({
+        width: { size: 55, type: WidthType.PERCENTAGE },
+        borders: noBorders,
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 72, bottom: 72, left: 144, right: 144 },
+        children: leftContent
+      }),
+      new TableCell({
+        width: { size: 45, type: WidthType.PERCENTAGE },
+        borders: noBorders,
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 72, bottom: 72, left: 144, right: 144 },
+        children: rightContent
+      })
+    ]})]
+  });
+}
+```
+
 ### Using callouts_for_text for Inline References (v4.6)
 
 The `figure_registry.json` provides `callouts_for_text` with ready-to-use inline references for procedure text. Sub-steps can be generated directly from callout descriptions:
@@ -467,9 +676,11 @@ The `figure_registry.json` provides `callouts_for_text` with ready-to-use inline
 // Read figure registry
 const registry = JSON.parse(fs.readFileSync('workspace/images/annotated/figure_registry.json', 'utf-8'));
 
-// Get callouts for a specific figure
+// Get callouts for a specific figure (defensive access)
 function getCalloutsForFigure(figureNumber) {
-  const figure = registry.figures.find(f => f.figure_number === figureNumber);
+  const figure = registry?.figures
+    ? registry.figures.find(f => f.figure_number === figureNumber)
+    : null;
   return figure?.callouts_for_text || [];
 }
 
@@ -625,6 +836,1096 @@ function createRevisionTable(revisions = []) {
 
   return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows });
 }
+```
+
+### createFigureIndexAppendix
+
+Creates a Figure Index appendix page listing all screenshots with their titles, descriptions, sections, and step references. **Required for all procedures with screenshots.**
+
+```javascript
+function createFigureIndexAppendix(figures) {
+  // figures = Array from figure_registry.json:
+  // [{ figure_number: 1, title: "Login Screen", description: "Shows the member login dialog",
+  //    section: "Getting Started", step_reference: "Step 2" }, ...]
+
+  const widths = [10, 20, 35, 20, 15]; // Fig #, Title, Description, Section, Step
+
+  // Section header with page break
+  const header = new Paragraph({
+    pageBreakBefore: true,
+    spacing: { before: 180, after: 60 },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: TFCU_COLORS.PRIMARY_TEAL }},
+    children: [
+      new Bookmark({ id: "figure-index", children: [
+        new TextRun({ text: "Figure Index", bold: true, size: 28, color: TFCU_COLORS.PRIMARY_TEAL })
+      ]})
+    ]
+  });
+
+  // Summary paragraph
+  const summary = new Paragraph({
+    spacing: { before: 60, after: 120 },
+    children: [new TextRun({ text: `This procedure contains ${figures.length} figure${figures.length !== 1 ? 's' : ''}.`, size: 22, italics: true })]
+  });
+
+  // Table header row
+  const tableRows = [
+    new TableRow({ tableHeader: true, children: ["Fig #", "Title", "Description", "Section", "Step"].map((t, i) =>
+      new TableCell({
+        width: { size: widths[i], type: WidthType.PERCENTAGE },
+        shading: { fill: TFCU_COLORS.PRIMARY_TEAL, type: ShadingType.CLEAR },
+        borders: cellBorders,
+        children: [new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 25, after: 25 },
+          children: [new TextRun({ text: t, bold: true, color: TFCU_COLORS.WHITE, size: 20 })]
+        })]
+      })
+    )})
+  ];
+
+  // Data rows
+  figures.forEach((fig, index) => {
+    const shade = index % 2 === 1 ? { fill: TFCU_COLORS.LIGHT_GRAY, type: ShadingType.CLEAR } : undefined;
+    const desc = fig.description?.length > 60 ? fig.description.substring(0, 57) + "..." : (fig.description || "Screenshot");
+
+    tableRows.push(new TableRow({ children: [
+      String(fig.figure_number || index + 1),
+      fig.title || `Figure ${fig.figure_number || index + 1}`,
+      desc,
+      fig.section || "-",
+      fig.step_reference || "-"
+    ].map((text, i) =>
+      new TableCell({
+        width: { size: widths[i], type: WidthType.PERCENTAGE },
+        borders: cellBorders,
+        shading: shade,
+        children: [new Paragraph({
+          alignment: i === 0 || i === 4 ? AlignmentType.CENTER : AlignmentType.LEFT,
+          spacing: { before: 20, after: 20 },
+          children: [new TextRun({ text, size: 20, bold: i === 1 })]
+        })]
+      })
+    )}));
+  });
+
+  const table = new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows });
+
+  return [header, summary, table];
+}
+```
+
+**Usage in document assembly:**
+```javascript
+// Load figure registry from workspace
+const figureRegistry = JSON.parse(fs.readFileSync('workspace/images/annotated/figure_registry.json', 'utf8'));
+
+// Add Figure Index appendix before Revision History
+if (figureRegistry.figures && figureRegistry.figures.length > 0) {
+  children.push(...createFigureIndexAppendix(figureRegistry.figures));
+}
+```
+
+### createGlossaryTable
+
+Creates a Term/Definition table for procedure glossaries.
+
+```javascript
+function createGlossaryTable(terms) {
+  // terms = [{ term: "BIN", definition: "Bank Identification Number..." }, ...]
+  const widths = [30, 70];
+  const tableRows = [
+    new TableRow({ tableHeader: true, children: ["Term/Acronym", "Definition"].map((t, i) =>
+      new TableCell({
+        width: { size: widths[i], type: WidthType.PERCENTAGE },
+        shading: { fill: TFCU_COLORS.PRIMARY_TEAL, type: ShadingType.CLEAR },
+        borders: cellBorders,
+        children: [new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 30, after: 30 },
+          children: [new TextRun({ text: t, bold: true, color: TFCU_COLORS.WHITE, size: 20 })]
+        })]
+      })
+    )})
+  ];
+
+  terms.forEach((item, index) => {
+    const shade = index % 2 === 1 ? { fill: TFCU_COLORS.LIGHT_GRAY, type: ShadingType.CLEAR } : undefined;
+    tableRows.push(new TableRow({ children: [
+      new TableCell({
+        width: { size: widths[0], type: WidthType.PERCENTAGE },
+        borders: cellBorders,
+        shading: shade,
+        children: [new Paragraph({
+          alignment: AlignmentType.LEFT,
+          spacing: { before: 30, after: 30 },
+          children: [new TextRun({ text: item.term, bold: true, size: 20, font: "Calibri" })]
+        })]
+      }),
+      new TableCell({
+        width: { size: widths[1], type: WidthType.PERCENTAGE },
+        borders: cellBorders,
+        shading: shade,
+        children: [new Paragraph({
+          alignment: AlignmentType.LEFT,
+          spacing: { before: 30, after: 30 },
+          children: [new TextRun({ text: item.definition, size: 20, font: "Calibri" })]
+        })]
+      })
+    ]}));
+  });
+
+  return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows });
+}
+```
+
+### createComparisonTable
+
+Creates a side-by-side comparison table (e.g., old vs. new process, card types).
+
+```javascript
+function createComparisonTable(title, columns, rows) {
+  // title = "Card Type Comparison" (optional, null to omit)
+  // columns = ["Feature", "Consumer Debit", "Business Debit"]
+  // rows = [{ feature: "Daily Limit", values: ["$1,000", "$5,000"] }, ...]
+  const columnCount = columns.length;
+  const columnWidth = Math.floor(100 / columnCount);
+  const tableRows = [];
+
+  // Optional title row spanning all columns
+  if (title) {
+    tableRows.push(new TableRow({ children: [
+      new TableCell({
+        columnSpan: columnCount,
+        shading: { fill: TFCU_COLORS.LIGHT_TEAL, type: ShadingType.CLEAR },
+        borders: cellBorders,
+        children: [new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 40, after: 40 },
+          children: [new TextRun({ text: title, bold: true, size: 24, color: TFCU_COLORS.PRIMARY_TEAL, font: "Calibri" })]
+        })]
+      })
+    ]}));
+  }
+
+  // Header row with column labels
+  tableRows.push(new TableRow({ tableHeader: true, children: columns.map(col =>
+    new TableCell({
+      width: { size: columnWidth, type: WidthType.PERCENTAGE },
+      shading: { fill: TFCU_COLORS.PRIMARY_TEAL, type: ShadingType.CLEAR },
+      borders: cellBorders,
+      children: [new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 30, after: 30 },
+        children: [new TextRun({ text: col, bold: true, color: TFCU_COLORS.WHITE, size: 20 })]
+      })]
+    })
+  )}));
+
+  // Data rows
+  rows.forEach((row, index) => {
+    const shade = index % 2 === 1 ? { fill: TFCU_COLORS.LIGHT_GRAY, type: ShadingType.CLEAR } : undefined;
+    const cellData = [row.feature, ...row.values];
+    tableRows.push(new TableRow({ children: cellData.map((text, i) =>
+      new TableCell({
+        width: { size: columnWidth, type: WidthType.PERCENTAGE },
+        borders: cellBorders,
+        shading: shade,
+        children: [new Paragraph({
+          alignment: AlignmentType.LEFT,
+          spacing: { before: 30, after: 30 },
+          children: [new TextRun({
+            text: text,
+            bold: i === 0,  // First column (feature labels) are bold
+            size: 20,
+            font: "Calibri"
+          })]
+        })]
+      })
+    )}));
+  });
+
+  return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows });
+}
+```
+
+---
+
+## Intervention Marker Helpers
+
+Helper functions for creating anti-hallucination intervention markers in generated documents. Markers appear as **bold, red, italic text with yellow highlighting** to indicate content requiring human verification.
+
+### Marker Constants
+
+```javascript
+// Intervention marker styles - bold, red, italic with yellow highlight for maximum visibility
+const INTERVENTION_MARKER_STYLE = {
+  font: "Calibri",
+  size: 20,        // 10pt
+  color: "C00000", // Red
+  italics: true,
+  bold: true,
+  highlight: "yellow"  // Yellow background highlight
+};
+
+// Marker types and their formats
+const MARKER_TYPES = {
+  VERIFY: { prefix: "[VERIFY: ", suffix: "]", description: "Pattern-extracted value needs confirmation" },
+  CONFIRM: { prefix: "[CONFIRM: ", suffix: "]", description: "Auto-generated content needs validation" },
+  SME_INPUT: { prefix: "[SME INPUT REQUIRED: ", suffix: "]", description: "Missing TFCU-specific information" },
+  MISSING: { prefix: "[MISSING: ", suffix: "]", description: "Required field not provided" },
+  CHECK: { prefix: "[CHECK: ", suffix: "]", description: "Inferred content with low confidence" },
+  SUGGESTED: { prefix: "[SUGGESTED: ", suffix: "]", description: "Auto-generated content not from source" }
+};
+```
+
+### createInterventionMarker
+
+Creates a styled TextRun for an intervention marker.
+
+```javascript
+/**
+ * Creates a bold, red, italic, yellow-highlighted intervention marker TextRun
+ * @param {string} type - Marker type: VERIFY, CONFIRM, SME_INPUT, MISSING, CHECK, SUGGESTED
+ * @param {string} content - Description of what needs to be verified/provided
+ * @returns {TextRun} Styled TextRun for the marker
+ */
+function createInterventionMarker(type, content) {
+  const marker = MARKER_TYPES[type] || MARKER_TYPES.VERIFY;
+
+  return new TextRun({
+    text: `${marker.prefix}${content}${marker.suffix}`,
+    font: INTERVENTION_MARKER_STYLE.font,
+    size: INTERVENTION_MARKER_STYLE.size,
+    color: INTERVENTION_MARKER_STYLE.color,
+    italics: INTERVENTION_MARKER_STYLE.italics,
+    bold: INTERVENTION_MARKER_STYLE.bold,
+    highlight: INTERVENTION_MARKER_STYLE.highlight
+  });
+}
+```
+
+### createSMEMarker
+
+Convenience function for creating SME Input Required markers (most common use case).
+
+```javascript
+/**
+ * Creates an SME Input Required marker - the most common anti-hallucination marker
+ * Use this when TFCU-specific information is missing from the source document
+ * @param {string} description - What information is needed (e.g., "current phone number", "daily limit amount")
+ * @returns {TextRun} Bold, red, italic, yellow-highlighted marker
+ */
+function createSMEMarker(description) {
+  return new TextRun({
+    text: `[SME INPUT REQUIRED: ${description}]`,
+    bold: true,
+    italics: true,
+    color: "C00000",
+    highlight: "yellow",
+    size: 22
+  });
+}
+```
+
+**Usage Examples:**
+```javascript
+// Missing contact information
+new Paragraph({
+  children: [
+    new TextRun({ text: "Contact Card Services at ", font: "Calibri", size: 22 }),
+    createSMEMarker("Card Services phone extension"),
+    new TextRun({ text: " for assistance.", font: "Calibri", size: 22 })
+  ]
+});
+
+// Missing approval authority
+new Paragraph({
+  children: [
+    new TextRun({ text: "Transactions over $5,000 require approval from ", font: "Calibri", size: 22 }),
+    createSMEMarker("approval authority/role"),
+    new TextRun({ text: ".", font: "Calibri", size: 22 })
+  ]
+});
+
+// Missing policy reference
+new Paragraph({
+  children: [
+    new TextRun({ text: "Refer to ", font: "Calibri", size: 22 }),
+    createSMEMarker("related policy name"),
+    new TextRun({ text: " for complete requirements.", font: "Calibri", size: 22 })
+  ]
+});
+```
+
+### createTextWithMarker
+
+Creates a paragraph that includes both normal text and an intervention marker.
+
+```javascript
+/**
+ * Creates a paragraph with inline intervention marker
+ * @param {string} beforeText - Text before the marker
+ * @param {string} markerType - Type of marker (VERIFY, CONFIRM, etc.)
+ * @param {string} markerContent - Content description for the marker
+ * @param {string} afterText - Text after the marker (optional)
+ * @returns {Paragraph} Paragraph with embedded marker
+ */
+function createTextWithMarker(beforeText, markerType, markerContent, afterText = "") {
+  return new Paragraph({
+    spacing: { after: 120 },
+    children: [
+      new TextRun({ text: beforeText, font: "Calibri", size: 22 }),
+      createInterventionMarker(markerType, markerContent),
+      new TextRun({ text: afterText, font: "Calibri", size: 22 })
+    ]
+  });
+}
+```
+
+### createMarkerSummary
+
+Creates a summary table showing all intervention markers in the document.
+
+```javascript
+/**
+ * Creates a summary of intervention markers for the output section
+ * @param {Object} markerCounts - Object with counts per marker type { VERIFY: 3, SME_INPUT: 1, ... }
+ * @returns {Table} Summary table for the output
+ */
+function createMarkerSummary(markerCounts) {
+  const rows = [
+    // Header row
+    new TableRow({
+      children: [
+        new TableCell({
+          width: { size: 40, type: WidthType.PERCENTAGE },
+          shading: { fill: "154747", type: ShadingType.CLEAR },
+          children: [new Paragraph({
+            children: [new TextRun({ text: "INTERVENTION MARKERS", bold: true, color: "FFFFFF", size: 20 })]
+          })]
+        }),
+        new TableCell({
+          width: { size: 60, type: WidthType.PERCENTAGE },
+          shading: { fill: "154747", type: ShadingType.CLEAR },
+          children: [new Paragraph({
+            children: [new TextRun({ text: "Action Required", bold: true, color: "FFFFFF", size: 20 })]
+          })]
+        })
+      ]
+    })
+  ];
+
+  // Add a row for each marker type with count > 0
+  Object.entries(markerCounts).forEach(([type, count]) => {
+    if (count > 0) {
+      const marker = MARKER_TYPES[type];
+      rows.push(new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({
+              children: [
+                new TextRun({ text: `${count} `, size: 20 }),
+                createInterventionMarker(type, "...")
+              ]
+            })]
+          }),
+          new TableCell({
+            children: [new Paragraph({
+              children: [new TextRun({ text: marker.description, size: 20 })]
+            })]
+          })
+        ]
+      }));
+    }
+  });
+
+  // Add instruction row
+  rows.push(new TableRow({
+    children: [
+      new TableCell({
+        columnSpan: 2,
+        shading: { fill: "FFF2CC", type: ShadingType.CLEAR },
+        children: [new Paragraph({
+          children: [new TextRun({
+            text: "Search for red italic text in the document to find all markers. All markers must be resolved before the procedure is approved.",
+            size: 20,
+            italics: true
+          })]
+        })]
+      })
+    ]
+  }));
+
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: rows
+  });
+}
+```
+
+### Usage Example
+
+```javascript
+// Example: Creating a step with a marker for missing contact info
+const stepWithMarker = new Paragraph({
+  children: [
+    new TextRun({ text: "1. Contact the Card@Once support team at ", font: "Calibri", size: 22 }),
+    createInterventionMarker("SME_INPUT", "current phone number"),
+    new TextRun({ text: " if the printer fails to respond.", font: "Calibri", size: 22 })
+  ]
+});
+
+// Example: Quick Reference value needing verification
+const qrValueMarker = createTextWithMarker(
+  "Consumer Debit BIN: 41139300 ",
+  "VERIFY",
+  "confirm BIN is current",
+  ""
+);
+
+// Example: Marker summary for output section
+const markerCounts = { VERIFY: 3, SME_INPUT: 2, CONFIRM: 1, MISSING: 0, CHECK: 0, SUGGESTED: 0 };
+const summaryTable = createMarkerSummary(markerCounts);
+```
+
+---
+
+## Assessment Section Helpers
+
+Helper functions for generating training assessments from procedure content.
+
+### createAssessmentHeader
+
+```javascript
+function createAssessmentHeader() {
+  return [
+    new Paragraph({
+      pageBreakBefore: true,
+      children: [new Bookmark({
+        id: "assessment",
+        children: [new TextRun({ text: "PROCEDURE COMPETENCY ASSESSMENT", bold: true, size: 28, color: "154747", font: "Calibri" })]
+      })],
+      border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: "154747" } },
+      spacing: { after: 120 }
+    }),
+    new Paragraph({
+      spacing: { after: 200 },
+      children: [
+        new TextRun({ text: "Instructions: ", bold: true, size: 22, font: "Calibri" }),
+        new TextRun({ text: "Complete this assessment after reviewing the procedure. A score of 80% or higher demonstrates proficiency.", size: 22, font: "Calibri" })
+      ]
+    })
+  ];
+}
+```
+
+### createMultipleChoiceQuestion
+
+```javascript
+function createMultipleChoiceQuestion(number, question, options) {
+  // options = ["Option A", "Option B", "Option C", "Option D"]
+  const optionLetters = ['a', 'b', 'c', 'd'];
+  const children = [
+    new Paragraph({
+      spacing: { before: 160, after: 80 },
+      children: [new TextRun({ text: `${number}. ${question}`, bold: true, size: 22, font: "Calibri" })]
+    })
+  ];
+
+  options.forEach((opt, i) => {
+    children.push(new Paragraph({
+      indent: { left: 360 },
+      spacing: { after: 40 },
+      children: [new TextRun({ text: `${optionLetters[i]}) ${opt}`, size: 22, font: "Calibri" })]
+    }));
+  });
+
+  return children;
+}
+```
+
+### createTrueFalseQuestion
+
+```javascript
+function createTrueFalseQuestion(number, statement) {
+  return new Paragraph({
+    spacing: { before: 160, after: 80 },
+    children: [
+      new TextRun({ text: `${number}. [True/False] `, bold: true, size: 22, font: "Calibri" }),
+      new TextRun({ text: statement, size: 22, font: "Calibri" })
+    ]
+  });
+}
+```
+
+### createFillBlankQuestion
+
+```javascript
+function createFillBlankQuestion(number, question) {
+  return [
+    new Paragraph({
+      spacing: { before: 160, after: 40 },
+      children: [new TextRun({ text: `${number}. ${question}`, bold: true, size: 22, font: "Calibri" })]
+    }),
+    new Paragraph({
+      indent: { left: 360 },
+      spacing: { after: 80 },
+      children: [new TextRun({ text: "_______________________________________________", size: 22, font: "Calibri" })]
+    })
+  ];
+}
+```
+
+### createScenarioQuestion
+
+```javascript
+function createScenarioQuestion(number, scenario, options) {
+  // For scenario-based multiple choice
+  const optionLetters = ['a', 'b', 'c', 'd'];
+  const children = [
+    new Paragraph({
+      spacing: { before: 200, after: 80 },
+      children: [new TextRun({ text: `${number}. `, bold: true, size: 22, font: "Calibri" })]
+    }),
+    new Paragraph({
+      indent: { left: 360 },
+      spacing: { after: 100 },
+      children: [new TextRun({ text: scenario, italics: true, size: 22, font: "Calibri" })]
+    }),
+    new Paragraph({
+      indent: { left: 360 },
+      spacing: { after: 80 },
+      children: [new TextRun({ text: "According to the procedure, what should you do?", size: 22, font: "Calibri" })]
+    })
+  ];
+
+  options.forEach((opt, i) => {
+    children.push(new Paragraph({
+      indent: { left: 720 },
+      spacing: { after: 40 },
+      children: [new TextRun({ text: `${optionLetters[i]}) ${opt}`, size: 22, font: "Calibri" })]
+    }));
+  });
+
+  return children;
+}
+```
+
+### createAnswerKey
+
+```javascript
+function createAnswerKey(answers) {
+  // answers = [{number: 1, answer: "D", explanation: "Verify member identity (Prerequisite step)"}, ...]
+  const content = [
+    new Paragraph({
+      pageBreakBefore: true,
+      children: [new TextRun({ text: "ANSWER KEY - SUPERVISOR USE ONLY", bold: true, size: 28, color: "154747", font: "Calibri" })],
+      border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: "154747" } },
+      spacing: { after: 120 }
+    }),
+    new Paragraph({
+      shading: { type: ShadingType.SOLID, color: "FFF2CC" },
+      border: { top: { style: BorderStyle.SINGLE, size: 8, color: "FFC000" }, bottom: { style: BorderStyle.SINGLE, size: 8, color: "FFC000" }, left: { style: BorderStyle.SINGLE, size: 8, color: "FFC000" }, right: { style: BorderStyle.SINGLE, size: 8, color: "FFC000" } },
+      spacing: { before: 100, after: 200 },
+      children: [new TextRun({ text: "⚠ DO NOT DISTRIBUTE TO STAFF BEFORE ASSESSMENT COMPLETION", bold: true, size: 20, font: "Calibri" })]
+    })
+  ];
+
+  answers.forEach(a => {
+    content.push(new Paragraph({
+      spacing: { after: 60 },
+      children: [
+        new TextRun({ text: `${a.number}. ${a.answer}`, bold: true, size: 22, font: "Calibri" }),
+        new TextRun({ text: ` — ${a.explanation}`, size: 22, font: "Calibri" })
+      ]
+    }));
+  });
+
+  // Add scoring section
+  content.push(new Paragraph({
+    spacing: { before: 200 },
+    border: { top: { style: BorderStyle.SINGLE, size: 4, color: "CCCCCC" } },
+    children: [new TextRun({ text: "SCORING", bold: true, size: 24, font: "Calibri" })]
+  }));
+
+  content.push(new Paragraph({
+    spacing: { after: 60 },
+    children: [new TextRun({ text: `Score: ___/${answers.length} correct = ___%`, size: 22, font: "Calibri" })]
+  }));
+
+  content.push(new Paragraph({
+    spacing: { after: 100 },
+    children: [new TextRun({ text: `Pass threshold: 80% (${Math.ceil(answers.length * 0.8)}/${answers.length} or higher)`, bold: true, size: 22, font: "Calibri" })]
+  }));
+
+  content.push(new Paragraph({
+    spacing: { before: 100 },
+    children: [new TextRun({ text: "Recommended actions for scores below 80%:", bold: true, size: 20, font: "Calibri" })]
+  }));
+
+  ["Review procedure with supervisor", "Shadow experienced staff member", "Retake assessment after additional training"].forEach(action => {
+    content.push(new Paragraph({
+      indent: { left: 360 },
+      children: [new TextRun({ text: `• ${action}`, size: 20, font: "Calibri" })]
+    }));
+  });
+
+  return content;
+}
+```
+
+### Example Assessment Generation
+
+```javascript
+// Generate assessment section for a card issuance procedure
+const assessmentSection = [
+  ...createAssessmentHeader(),
+
+  // Section 1: Procedure Knowledge
+  new Paragraph({
+    spacing: { before: 200, after: 100 },
+    children: [new TextRun({ text: "SECTION 1: PROCEDURE KNOWLEDGE", bold: true, size: 24, color: "154747", font: "Calibri" })]
+  }),
+
+  ...createMultipleChoiceQuestion(1, "What is the FIRST step in the card issuance process?", [
+    "Insert the card blank into the printer",
+    "Log in to CardWizard Pro",
+    "Have the member enter their PIN",
+    "Verify member identity with two forms of ID"
+  ]),
+
+  createTrueFalseQuestion(2, "Cards can be issued without verifying member identity if the member is a long-standing account holder."),
+
+  ...createFillBlankQuestion(3, "When entering the member's account number, what should you verify BEFORE proceeding to PIN entry?"),
+
+  // Section 2: Scenario Applications
+  new Paragraph({
+    spacing: { before: 200, after: 100 },
+    children: [new TextRun({ text: "SECTION 2: SCENARIO APPLICATIONS", bold: true, size: 24, color: "154747", font: "Calibri" })]
+  }),
+
+  ...createScenarioQuestion(4, "A member requests an instant-issue debit card. After entering their account number, the system displays an error message stating 'Account Restricted.'", [
+    "Issue the card anyway since the member is present",
+    "Clear the error and retry",
+    "Refer to the Troubleshooting section and contact support if needed",
+    "Ask the member to return tomorrow"
+  ]),
+
+  // Answer Key
+  ...createAnswerKey([
+    { number: 1, answer: "D", explanation: "Verify member identity is always the first step (Prerequisites)" },
+    { number: 2, answer: "False", explanation: "Member verification is ALWAYS required per CRITICAL callout" },
+    { number: 3, answer: "Account number displays correctly / matches member ID", explanation: "Step 2 verification requirement" },
+    { number: 4, answer: "C", explanation: "Troubleshooting section specifies support contact for account restrictions" }
+  ])
+];
+```
+
+---
+
+## Quick Card Helpers
+
+Helper functions for generating one-page quick reference cards from procedures.
+
+### Quick Card Layout Constants
+
+```javascript
+// Quick card specific constants
+const QUICK_CARD_LAYOUT = {
+  ORIENTATION: 'landscape',
+  PAGE_WIDTH: 11,  // inches
+  PAGE_HEIGHT: 8.5,  // inches
+  MARGINS: 720,  // 0.5 inch in DXA
+  HEADER_HEIGHT: 864,  // 0.6 inch in DXA
+  COLUMN_GUTTER: 360,  // 0.25 inch
+  SECTION_SPACING: 240,  // 12pt in twips
+  ITEM_SPACING: 120  // 6pt in twips
+};
+
+// Section icons for quick card
+const QUICK_CARD_ICONS = {
+  before_you_start: "☐",
+  key_steps: "#",
+  watch_out_for: "⚠",
+  when_to_escalate: "→",
+  quick_contacts: "☎"
+};
+```
+
+### createQuickCardHeader
+
+```javascript
+function createQuickCardHeader(procedureName, version, date) {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        height: { value: 864, rule: HeightRule.EXACT },
+        children: [
+          new TableCell({
+            shading: { fill: TFCU_COLORS.PRIMARY_TEAL, type: ShadingType.CLEAR },
+            borders: noBorders,
+            verticalAlign: VerticalAlign.CENTER,
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            children: [new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: procedureName,
+                  bold: true,
+                  color: TFCU_COLORS.WHITE,
+                  size: 32,
+                  font: "Calibri"
+                }),
+                new TextRun({
+                  text: " - QUICK REFERENCE",
+                  color: TFCU_COLORS.WHITE,
+                  size: 28,
+                  font: "Calibri"
+                })
+              ]
+            })]
+          })
+        ]
+      })
+    ]
+  });
+}
+```
+
+### createQuickCardSectionHeader
+
+```javascript
+function createQuickCardSectionHeader(title, icon) {
+  return new Paragraph({
+    spacing: { before: 160, after: 80 },
+    border: {
+      bottom: {
+        style: BorderStyle.SINGLE,
+        size: 8,
+        color: TFCU_COLORS.PRIMARY_TEAL
+      }
+    },
+    children: [
+      new TextRun({
+        text: icon + " ",
+        size: 24,
+        font: "Calibri"
+      }),
+      new TextRun({
+        text: title,
+        bold: true,
+        size: 24,
+        color: TFCU_COLORS.PRIMARY_TEAL,
+        font: "Calibri"
+      })
+    ]
+  });
+}
+```
+
+### createCheckboxList
+
+```javascript
+function createCheckboxList(items) {
+  // For "Before You Start" section
+  return items.map(item => new Paragraph({
+    spacing: { after: 80 },
+    children: [
+      new TextRun({ text: "☐ ", font: "Calibri", size: 20 }),
+      new TextRun({ text: item, font: "Calibri", size: 20 })
+    ]
+  }));
+}
+```
+
+### createCondensedSteps
+
+```javascript
+function createCondensedSteps(steps) {
+  // For "Key Steps" section - max 8 steps, condensed text
+  return steps.map((step, index) => new Paragraph({
+    spacing: { after: 60 },
+    children: [
+      new TextRun({
+        text: `${index + 1}. `,
+        bold: true,
+        font: "Calibri",
+        size: 20
+      }),
+      new TextRun({
+        text: step,
+        font: "Calibri",
+        size: 20
+      })
+    ]
+  }));
+}
+```
+
+### createCalloutList
+
+```javascript
+function createCalloutList(callouts) {
+  // For "Watch Out For" section
+  const iconMap = { CRITICAL: "⛔", WARNING: "⚠️", NOTE: "ℹ️", TIP: "✅" };
+  return callouts.map(callout => new Paragraph({
+    spacing: { after: 60 },
+    children: [
+      new TextRun({
+        text: (iconMap[callout.type] || "⚠️") + " ",
+        size: 20
+      }),
+      new TextRun({
+        text: callout.text,
+        font: "Calibri",
+        size: 20
+      })
+    ]
+  }));
+}
+```
+
+### createEscalationList
+
+```javascript
+function createEscalationList(triggers) {
+  // For "When to Escalate" section
+  // triggers = [{condition: "Error persists", action: "Contact IT Support"}, ...]
+  return triggers.map(trigger => new Paragraph({
+    spacing: { after: 60 },
+    children: [
+      new TextRun({ text: "• ", font: "Calibri", size: 20 }),
+      new TextRun({
+        text: trigger.condition,
+        italics: true,
+        font: "Calibri",
+        size: 20
+      }),
+      new TextRun({ text: " → ", font: "Calibri", size: 20 }),
+      new TextRun({
+        text: trigger.action,
+        bold: true,
+        font: "Calibri",
+        size: 20
+      })
+    ]
+  }));
+}
+```
+
+### createQuickContactGrid
+
+```javascript
+function createQuickContactGrid(contacts) {
+  // contacts = [{label: "IT Help Desk", value: "ext. 4500"}, ...]
+  const rows = contacts.map((contact, index) => {
+    const shade = index % 2 === 0 ? TFCU_COLORS.WHITE : TFCU_COLORS.LIGHT_GRAY;
+    return new TableRow({
+      children: [
+        new TableCell({
+          width: { size: 40, type: WidthType.PERCENTAGE },
+          shading: { fill: shade, type: ShadingType.CLEAR },
+          borders: cellBorders,
+          margins: { top: 40, bottom: 40, left: 72, right: 72 },
+          children: [new Paragraph({
+            children: [new TextRun({
+              text: contact.label,
+              bold: true,
+              size: 18,
+              font: "Calibri"
+            })]
+          })]
+        }),
+        new TableCell({
+          width: { size: 60, type: WidthType.PERCENTAGE },
+          shading: { fill: shade, type: ShadingType.CLEAR },
+          borders: cellBorders,
+          margins: { top: 40, bottom: 40, left: 72, right: 72 },
+          children: [new Paragraph({
+            children: [new TextRun({
+              text: contact.value,
+              size: 18,
+              font: "Consolas"
+            })]
+          })]
+        })
+      ]
+    });
+  });
+
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows
+  });
+}
+```
+
+### createLandscapeQuickCard
+
+```javascript
+function createLandscapeQuickCard(config) {
+  // config = {
+  //   procedureName, department, date,
+  //   beforeYouStart: [],  // prerequisites
+  //   keySteps: [],        // condensed steps (max 8)
+  //   watchOutFor: [],     // callouts [{type, text}]
+  //   whenToEscalate: [],  // [{condition, action}]
+  //   quickContacts: []    // [{label, value}]
+  // }
+
+  // Build left column content
+  const leftContent = [
+    createQuickCardSectionHeader("BEFORE YOU START", QUICK_CARD_ICONS.before_you_start),
+    ...createCheckboxList(config.beforeYouStart),
+    new Paragraph({ spacing: { after: 120 }, children: [] }),
+    createQuickCardSectionHeader("KEY STEPS", QUICK_CARD_ICONS.key_steps),
+    ...createCondensedSteps(config.keySteps)
+  ];
+
+  // Build right column content
+  const rightContent = [
+    createQuickCardSectionHeader("WATCH OUT FOR", QUICK_CARD_ICONS.watch_out_for),
+    ...createCalloutList(config.watchOutFor),
+    new Paragraph({ spacing: { after: 80 }, children: [] }),
+    createQuickCardSectionHeader("WHEN TO ESCALATE", QUICK_CARD_ICONS.when_to_escalate),
+    ...createEscalationList(config.whenToEscalate),
+    new Paragraph({ spacing: { after: 80 }, children: [] }),
+    createQuickCardSectionHeader("QUICK CONTACTS", QUICK_CARD_ICONS.quick_contacts),
+    createQuickContactGrid(config.quickContacts)
+  ];
+
+  // Two-column layout table
+  const contentTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: noBorders,
+            margins: { top: 72, bottom: 72, left: 0, right: 180 },
+            children: leftContent
+          }),
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: noBorders,
+            margins: { top: 72, bottom: 72, left: 180, right: 0 },
+            children: rightContent
+          })
+        ]
+      })
+    ]
+  });
+
+  // Footer paragraph
+  const footer = new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 200 },
+    children: [
+      new TextRun({
+        text: `${config.department} | ${config.procedureName} | ${config.date} | ${SKILL_VERSION}`,
+        size: 16,
+        color: "666666",
+        font: "Calibri"
+      }),
+      new TextRun({
+        text: "       For training use only",
+        size: 16,
+        color: "999999",
+        italics: true,
+        font: "Calibri"
+      })
+    ]
+  });
+
+  // Assemble complete document
+  return new Document({
+    styles,
+    sections: [{
+      properties: {
+        page: {
+          size: {
+            orientation: PageOrientation.LANDSCAPE,
+            width: convertInchesToTwip(11),
+            height: convertInchesToTwip(8.5)
+          },
+          margin: {
+            top: 720,
+            bottom: 720,
+            left: 720,
+            right: 720
+          }
+        }
+      },
+      children: [
+        createQuickCardHeader(config.procedureName, SKILL_VERSION, config.date),
+        new Paragraph({ spacing: { after: 120 }, children: [] }),
+        contentTable,
+        footer
+      ]
+    }]
+  });
+}
+```
+
+### Quick Card Generation Example
+
+```javascript
+// Example: Generate a quick card for Card Issuance procedure
+
+const cardConfig = {
+  procedureName: "Card Issuance Procedure",
+  department: "Operations",
+  date: "December 2025",
+
+  beforeYouStart: [
+    "Verify member identity with two forms of ID",
+    "Confirm account is active and in good standing",
+    "Ensure card printer is online and loaded",
+    "Log in to CardWizard Pro"
+  ],
+
+  keySteps: [
+    "Navigate to Tools > Card Services",
+    "Select card type from dropdown",
+    "Enter member account number",
+    "Verify account info matches member ID",
+    "Have member enter PIN (privacy shield!)",
+    "Select Print Card, wait ~30 seconds",
+    "Activate card before handing to member",
+    "Obtain member signature on log"
+  ],
+
+  watchOutFor: [
+    { type: "CRITICAL", text: "Never leave printer unattended during card creation" },
+    { type: "WARNING", text: "Always activate cards - even when reprinting" },
+    { type: "WARNING", text: "Verify BIN matches account type before proceeding" },
+    { type: "WARNING", text: "Privacy shield required during PIN entry" }
+  ],
+
+  whenToEscalate: [
+    { condition: "Card jam persists", action: "Contact Help Desk" },
+    { condition: "Account shows restriction", action: "Contact Supervisor" },
+    { condition: "Suspicious activity", action: "Contact Compliance" }
+  ],
+
+  quickContacts: [
+    { label: "IT Help Desk", value: "ext. 4500" },
+    { label: "CardWizard Support", value: "1-800-237-3387" },
+    { label: "Supervisor", value: "[Fill in]" }
+  ]
+};
+
+// Generate the quick card document
+const quickCard = createLandscapeQuickCard(cardConfig);
+
+// Save to file
+Packer.toBuffer(quickCard).then(buffer => {
+  fs.writeFileSync("Card_Issuance_QuickCard_202512.docx", buffer);
+  console.log("Quick card generated successfully!");
+});
 ```
 
 ---
@@ -922,22 +2223,45 @@ function analyzeCoverage(procedure, registry) {
 
 This is the full example showing how to assemble a complete TFCU procedure document. Claude should generate code similar to this inline for each procedure.
 
+**IMPORTANT: Use validated-helpers for spec-compliant generation:**
+
 ```javascript
 const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
         Header, Footer, AlignmentType, BorderStyle, WidthType, ShadingType,
         VerticalAlign, PageNumber, PageBreak, Bookmark } = require('docx');
 const fs = require('fs');
 
+// MANDATORY: Import validated helpers for spec-compliant generation
+const {
+  createHeaderTable,
+  createCalloutBox,
+  createSectionHeader,
+  createRevisionTable,
+  createTableOfContents,
+  createStepWithScreenshot,
+  createQuickReferenceBox,
+  createTroubleshootingTable,
+  createValidationReport,
+  getPageMargins,
+  SpecConfig
+} = require('./validator/validated-helpers');
+
+const { ValidationContext } = require('./validator/validation-context');
+
+// Create validation context for this document
+const ctx = new ValidationContext({ mode: 'lenient' });
+
 // ============================================================================
 // PROCEDURE CONFIGURATION - Customize for each document
 // ============================================================================
 
+// CRITICAL: Always use getCurrentDate() - never hardcode dates!
 const PROCEDURE = {
   name: "Instant Issue Card Procedure",
   department: "Operations",
-  date: "December 2024",
+  date: getCurrentDate(),  // Dynamic: returns current "Month YYYY" (e.g., "December 2025")
   overview: "This procedure guides staff through the process of issuing instant debit and credit cards to members using the card printing system. It covers card selection, PIN assignment, activation, and troubleshooting common issues.",
-  filename: "Operations_Instant_Issue_Card_202412.docx"
+  filename: `Operations_Instant_Issue_Card_${getCurrentDateYYYYMM()}.docx`  // Dynamic: e.g., "202512"
 };
 
 // Load figure registry for image references
@@ -973,7 +2297,9 @@ const doc = new Document({
               new TextRun({ text: `${PROCEDURE.department} | ${PROCEDURE.name} | Page `, size: 18, color: "666666" }),
               new TextRun({ children: [PageNumber.CURRENT], size: 18, color: "666666" }),
               new TextRun({ text: " of ", size: 18, color: "666666" }),
-              new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 18, color: "666666" })
+              new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 18, color: "666666" }),
+              // Version watermark - subtle, inline with separator
+              new TextRun({ text: `  ·  ${SKILL_VERSION}`, size: 16, color: "AAAAAA" })
             ]
           })
         ]
@@ -985,16 +2311,17 @@ const doc = new Document({
       new Paragraph({ spacing: { after: 100 }, children: [] }),
 
       // ========== TABLE OF CONTENTS (optional, for longer procedures) ==========
+      // Use ANCHORS constants for standard sections to ensure TOC/bookmark match
       createTableOfContents([
-        { title: "Overview", anchor: "overview" },
-        { title: "Prerequisites", anchor: "prerequisites" },
-        { title: "Card Issuance", anchor: "card-issuance" },
-        { title: "Troubleshooting", anchor: "troubleshooting" },
-        { title: "Revision History", anchor: "revision-history" }
+        { title: "Overview", anchor: ANCHORS.OVERVIEW },
+        { title: "Prerequisites", anchor: ANCHORS.PREREQUISITES },
+        { title: "Card Issuance", anchor: "card-issuance" },  // Custom section, not in ANCHORS
+        { title: "Troubleshooting", anchor: ANCHORS.TROUBLESHOOTING },
+        { title: "Revision History", anchor: ANCHORS.REVISION_HISTORY }
       ]),
 
       // ========== OVERVIEW SECTION ==========
-      createSectionHeader("OVERVIEW", "overview"),
+      createSectionHeader("OVERVIEW", ANCHORS.OVERVIEW),
       new Paragraph({
         style: "Overview",
         children: [new TextRun({ text: PROCEDURE.overview, color: "0F4761", size: 26 })]
@@ -1034,7 +2361,7 @@ const doc = new Document({
       new Paragraph({ spacing: { after: 80 }, children: [] }),
 
       // ========== PREREQUISITES SECTION ==========
-      createSectionHeader("PREREQUISITES", "prerequisites"),
+      createSectionHeader("PREREQUISITES", ANCHORS.PREREQUISITES),
       ...createTextStep("1.", "Verify the member's identity using two forms of identification."),
       ...createTextStep("2.", "Confirm the member has an active account in good standing."),
       ...createTextStep("3.", "Ensure the card printer is online and has card stock loaded."),
@@ -1112,7 +2439,7 @@ const doc = new Document({
       ...createTextStep("6.", "Hand the card to the member and have them sign the card issuance log."),
 
       // ========== TROUBLESHOOTING SECTION ==========
-      createSectionHeader("TROUBLESHOOTING", "troubleshooting"),
+      createSectionHeader("TROUBLESHOOTING", ANCHORS.TROUBLESHOOTING),
       createTroubleshootingTable([
         { issue: "Card jam", cause: "Misaligned card stock", resolution: "Open printer, remove jammed card, realign stock, retry" },
         { issue: "PIN pad not responding", cause: "Connection issue", resolution: "Check USB connection, restart PIN pad if needed" },
@@ -1121,13 +2448,82 @@ const doc = new Document({
 
       // ========== REVISION HISTORY (always on new page) ==========
       new Paragraph({ children: [new PageBreak()] }),
-      createSectionHeader("REVISION HISTORY", "revision-history"),
+      createSectionHeader("REVISION HISTORY", ANCHORS.REVISION_HISTORY),
       createRevisionTable([
-        { date: "December 2024", reviewer: "J. Smith", changes: "Initial version" }
+        { date: getCurrentDate(), reviewer: "J. Smith", changes: "Initial version" }  // Dynamic date
       ])
     ]
   }]
 });
+
+// ============================================================================
+// SELF-VALIDATION (runs before document save)
+// ============================================================================
+const validationErrors = [];
+const validationWarnings = [];
+
+// Check for stale/hardcoded dates (dynamic check)
+const currentYear = new Date().getFullYear();
+const dateYearMatch = PROCEDURE.date.match(/\d{4}/);
+if (dateYearMatch) {
+  const procedureYear = parseInt(dateYearMatch[0], 10);
+  if (procedureYear < currentYear) {
+    validationErrors.push(`Stale date detected (${PROCEDURE.date}) - use getCurrentDate() for current date`);
+  }
+}
+// Also catch the specific hardcoded example
+if (PROCEDURE.date === "December 2024") {
+  validationErrors.push("Hardcoded example date 'December 2024' detected - use getCurrentDate() instead");
+}
+
+// Check for Figure Index when images exist
+const imageCount = figureRegistry?.figures?.length || 0;
+if (imageCount > 0) {
+  // Check if Figure Index section is included in document children
+  const docChildren = doc.sections?.[0]?.properties?.children || [];
+  const hasFigureIndex = docChildren.some(child =>
+    child?.properties?.tag === 'figure-index' ||
+    (child?.constructor?.name === 'Paragraph' &&
+     JSON.stringify(child).includes('Figure Index'))
+  );
+  if (!hasFigureIndex) {
+    validationErrors.push(`Missing Figure Index - ${imageCount} images require figure index appendix`);
+  }
+}
+
+// Check for raw images without annotation pipeline
+const rawPath = 'workspace/images/raw';
+const annotatedPath = 'workspace/images/annotated';
+const imageExtRegex = /\.(png|jpg|jpeg|gif)$/i;
+
+const rawImagesExist = fs.existsSync(rawPath) &&
+  fs.readdirSync(rawPath).filter(f => imageExtRegex.test(f)).length > 0;
+const annotatedImagesExist = fs.existsSync(annotatedPath) &&
+  fs.readdirSync(annotatedPath).filter(f => imageExtRegex.test(f)).length > 0;
+
+if (rawImagesExist && !annotatedImagesExist) {
+  validationErrors.push("Raw images detected but annotation pipeline not run. Execute screenshot_processor.py first.");
+}
+
+// Fail generation if critical errors
+if (validationErrors.length > 0) {
+  console.error("\n========== VALIDATION FAILED ==========");
+  validationErrors.forEach(err => console.error("ERROR:", err));
+  if (validationWarnings.length > 0) {
+    validationWarnings.forEach(warn => console.warn("WARNING:", warn));
+  }
+  console.error("=========================================\n");
+  process.exit(1);
+}
+
+// Show warnings but continue
+if (validationWarnings.length > 0) {
+  console.warn("\n========== VALIDATION WARNINGS ==========");
+  validationWarnings.forEach(warn => console.warn("WARNING:", warn));
+  console.warn("==========================================\n");
+}
+
+console.log("Self-validation passed!");
 
 // ============================================================================
 // SAVE DOCUMENT
